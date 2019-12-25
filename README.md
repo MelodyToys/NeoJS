@@ -1,4 +1,4 @@
-# NeoJS is a JavaScript scriptable NeoPixel LED Controller with a Web UI
+# NeoJS is a 'JavaScript' scriptable NeoPixel LED Controller with a easy to use Web UI
 
 ## What is NodeJS
 
