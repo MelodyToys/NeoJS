@@ -3,7 +3,7 @@
 ## What is NodeJS ?
 
 #### For the End User - *(Release)*
-  NeoJS is a ‘JavaScript’ scriptable NeoPixel LED Controller that can be used by beginners and experts to learn, test, prototype, and experiment with addressable LEDs and patterns. 
+  NeoJS is a ‘JavaScript’ scriptable NeoPixel LED Controller that can be used by beginners and experts to learn, test, prototype, experiment with, and deploy NeoPixel addressable LEDs and LED patterns. 
 
    NeoJS has an easy to use web UI accessible from a standard web browser, over a standard WiFi connection. With NeoJS, there’s no need to install software or hardware drivers on your computer or device to use it. ‘Out-of-the-Box’ NeoJS has everything needed to connect, control, program, and edit files using only the web browser.
 
