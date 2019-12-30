@@ -25,5 +25,8 @@
 
 However, this is one of the points we are trying to demonstrate with this project. We want to show how adding a VM layer into an Arduino sketch not only changes the dynamics of the sketch, (by making it scriptable) but also allows us to maintain access to the vast collection of Arduino Libraries and Drivers available.
 
+#### Screenshot
+![Image of NeoJS Screenshot](https://github.com/MelodyToys/NeoJS/blob/master/Screenshot.png)
+
 ## Why’s? And Why Not’s?
 
