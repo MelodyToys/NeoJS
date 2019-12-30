@@ -1,3 +1,4 @@
+![Image of NeoJS Logo](https://repository-images.githubusercontent.com/229978182/168daa80-2a98-11ea-8a90-c992fa3068a7)
 # ***NeoJS*** is a 'JavaScript' scriptable NeoPixel LED Controller with an easy to use Web UI
 
 ## What is ***NodeJS*** ?
