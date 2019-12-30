@@ -1,5 +1,5 @@
 # **NEOJS** is a 'JavaScript' scriptable NeoPixel LED Controller with an easy to use Web UI ‘Out-of-the-Box’
-![Image of NeoJS Logo](https://repository-images.githubusercontent.com/229978182/168daa80-2a98-11ea-8a90-c992fa3068a7)
+![Image of NeoJS Logo](/logo.png)
 
 #### For the End User - *(Release)*
 **NEOJS** is a scriptable LED Controller that can be used by beginners and experts to learn, test, prototype, experiment, and deploy NeoPixel addressable LEDs and LED patterns with an easy to use web UI accessible from a standard web browser, over a standard WiFi connection. There’s no need to install software or drivers on your computer or device to use it. ‘Out-of-the-Box’ everything needed to connect, control, program, and edit files using only the web browser. Use as an educational ‘Toy’  by educators to teach programming skills using a fun, interactive, easy to use platform. Use as a tool or a resource by artist, technicians, or anyone wanting to rapidly develop and deploy LED installaions.
