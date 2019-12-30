@@ -13,7 +13,7 @@
 However, this is one of the objectives we are trying to demonstrate with this project. We want to show by adding a VM layer into an Arduino sketch not only changes the dynamics of the sketch, (by making it scriptable) while maintaining access to the vast collection of Arduino libraries and drivers available today. Quickly glue various 'Arduino Libraries' together and map them into a JavaScript VM.
 
 #### Screenshot
-![Image of NeoJS Screenshot](/Screenshot.png)
+[![Image of NeoJS Screenshot](/Screenshot.png)](https://github.com/MelodyToys/NeoJS/blob/master/Screenshot.png)
 
 ## Why’s? And Why Not’s?
 
