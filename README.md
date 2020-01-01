@@ -15,5 +15,14 @@ However, this is one of the objectives we are trying to demonstrate with this pr
 #### Screenshot
 [![Image of NEOJS Screenshot](/Screenshot.png)](https://github.com/MelodyToys/NEOJS/blob/master/Screenshot.png)
 
-## Why’s? And Why Not’s?
+## Getting Started
+See the [Getting Started Guide](https://github.com/MelodyToys/NEOJS/blob/master/GetStarted.md)
+
+## Thank You
+[Cesanta Software](https://cesanta.com/) - [Elk JavaScript engine](https://github.com/cesanta/elk)
+
+[me-no-dev](https://github.com/me-no-dev) - [ESPAsyncWebServer](https://github.com/me-no-dev/ESPAsyncWebServer)
+
+[Adafruit Industries](http://adafruit.com/) - [NeoPixel Driver](https://github.com/adafruit/Adafruit_NeoPixel)
+
 
