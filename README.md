@@ -19,7 +19,7 @@ However, this is one of the objectives we are trying to demonstrate with this pr
 See the [Getting Started Guide](https://github.com/MelodyToys/NEOJS/blob/master/GetStarted.md)
 
 ## Thank You
-[Cesanta Software](https://cesanta.com/) - [Elk JavaScript engine](https://github.com/cesanta/elk)
+[Cesanta Software](https://cesanta.com/) - [Elk JavaScript Engine](https://github.com/cesanta/elk)
 
 [me-no-dev](https://github.com/me-no-dev) - [ESPAsyncWebServer](https://github.com/me-no-dev/ESPAsyncWebServer)
 
