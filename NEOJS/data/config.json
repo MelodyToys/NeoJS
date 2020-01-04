@@ -1,6 +1,6 @@
 {
-  "wifi_sta_ssid": "IdeaFabLabs",
-  "wifi_sta_pass": "betafish",
+  "wifi_sta_ssid": "",
+  "wifi_sta_pass": "",
   "wifi_ap_ssid": "NEOJS",
   "wifi_ap_pass": "",
   "hostName": "NEOJS",
