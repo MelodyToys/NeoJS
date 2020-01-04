@@ -16,12 +16,12 @@
 #include <Adafruit_NeoPixel.h>
 #include <elk.h> 
 
-#define ALLOC     4096
-#define LED_PIN   D2
-#define LED_COUNT 8
 #define DEBUG     0
 
 struct Config {
+  int  elk_alloc;
+  int  led_pin;
+  int  led_count;
   char wifi_sta_ssid[64];
   char wifi_sta_pass[64];
   char wifi_ap_ssid[64];
@@ -33,8 +33,9 @@ struct Config {
 
 Config config;
 String serial_Repl = "";
-struct  js *js = js_create(malloc(ALLOC), ALLOC);
-Adafruit_NeoPixel strip(LED_COUNT, LED_PIN, NEO_GRB + NEO_KHZ800);
+struct  js *js;
+
+Adafruit_NeoPixel strip(10, 10, NEO_GRB + NEO_KHZ800); // Hack ~ set to anything ... then redefine in setup()
 
 AsyncWebServer server(80);
 AsyncWebSocket ws("/ws");
@@ -64,6 +65,8 @@ void setup(){
     if(DEBUG) { Serial.println(F("Config Initialization ... failed")); }
   } else { if(DEBUG) { Serial.println(F("Config Initialize....ok")); }}
 
+  strip.updateLength(config.led_count);
+  strip.setPin(config.led_pin);
   strip.begin();
   strip.show();
   strip.setBrightness(50);
@@ -213,6 +216,10 @@ bool loadConfig(Config &config) {
 
   JsonObject &root = jsonBuffer.parseObject(configFile);
 
+  config.led_pin = root["led_pin"] | 4;
+  config.led_count = root["led_count"] | 8;
+  config.elk_alloc = root["elk_alloc"] | 4096;
+  
   strlcpy(config.wifi_sta_ssid, root["wifi_sta_ssid"] | "", sizeof(config.wifi_sta_ssid));
   strlcpy(config.wifi_sta_pass, root["wifi_sta_pass"] | "", sizeof(config.wifi_sta_pass));
   strlcpy(config.wifi_ap_ssid, root["wifi_ap_ssid"] | "NEOJS", sizeof(config.wifi_ap_ssid));
@@ -301,7 +308,7 @@ String elkReload(){
 
 void elkInit() {
   if(DEBUG) { Serial.print(F("Starting VM (Elk ")); Serial.print(ELK_VER); Serial.print(F(") ")); }
-  js = js_create(malloc(ALLOC), ALLOC);
+  js = js_create(malloc(config.elk_alloc), config.elk_alloc);
   jsval_t v;
   String buffer;
   char c = 0;
