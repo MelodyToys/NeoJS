@@ -31,9 +31,10 @@ struct Config {
   char http_password[64];
 };
 
-Config config;
-String serial_Repl = "";
+Config  config;
+String  serial_Repl = "";
 struct  js *js;
+bool    js_init = false;
 
 Adafruit_NeoPixel strip(10, 10, NEO_GRB + NEO_KHZ800); // Hack ~ set to anything ... then redefine in setup()
 
@@ -51,6 +52,7 @@ extern "C" int Neo_WheelR(int wheelpos) { return WheelR(wheelpos); }
 extern "C" int Neo_WheelG(int wheelpos) { return WheelG(wheelpos); }
 extern "C" int Neo_WheelB(int wheelpos) { return WheelB(wheelpos); }
 extern "C" int Neo_numPixels(void) { return strip.numPixels(); }
+extern "C" void js_load(const char *str) { elkLoad(String(str)); }
 
 void setup(){
       
@@ -156,18 +158,7 @@ void setup(){
   server.on("/reload", HTTP_GET, [](AsyncWebServerRequest *request){
     request->send(200, "text/plain", String(elkReload()));
   }); 
-   
-  //get heap status, analog input value and all GPIO statuses in one json call
-  server.on("/all", HTTP_GET, [](AsyncWebServerRequest *request) {
-    String json = "{";
-    json += "\"heap\":" + String(ESP.getFreeHeap());
-    json += ", \"analog\":" + String(analogRead(A0));
-    json += ", \"gpio\":" + String((uint32_t)(((GPI | GPO) & 0xFFFF) | ((GP16I & 0x01) << 16)));
-    json += "}";
-    request->send(200, "text/json", json);
-    json = String();
-  });
-  
+
   server.serveStatic("/", SPIFFS, "/").setDefaultFile("index.htm");
   server.onNotFound([](AsyncWebServerRequest *request){
     int headers = request->headers();
@@ -258,6 +249,15 @@ void onWsEvent(AsyncWebSocket * server, AsyncWebSocketClient * client, AwsEventT
           msg += buff ;
         }
       }
+      /* FIXME add console commands to repl
+      ls      list, dir
+      rm      remove, delete
+      mv      move, rename
+      cp      copy
+      reboot
+      reload
+      help
+      */
       v = js_eval(js, msg.c_str(), 0);
       client->printf("%s", msg.c_str());
       client->printf("%s", js_str(js, v));      
@@ -289,6 +289,15 @@ void elkLoop(){
   if(Serial.available() > 0) {
     c = Serial.read();
     if(c == '\n' || c == '\r') {
+      /* FIXME add console commands to repl
+      ls      list, dir
+      rm      remove, delete
+      mv      move, rename
+      cp      copy
+      reboot
+      reload
+      help
+      */
       v = js_eval(js, serial_Repl.c_str(), 0);
       Serial.println(js_str(js, v));
       js_gc(js, v);
@@ -296,24 +305,58 @@ void elkLoop(){
     } 
     else
       serial_Repl += c;
-  }  
-  js_eval(js, "loop();", 0);
+  }
+  if(js_init) js_eval(js, "loop();", 0);
 }
 
-String elkReload(){
+String elkReload() {
   ws.printfAll("Connected to NEOJS WebREPL (Elk %s)", ELK_VER);
   elkInit();
   return String("Reloading Elk VM ...");
 }
 
-void elkInit() {
-  if(DEBUG) { Serial.print(F("Starting VM (Elk ")); Serial.print(ELK_VER); Serial.print(F(") ")); }
-  js = js_create(malloc(config.elk_alloc), config.elk_alloc);
+bool elkLoad(String path) {
   jsval_t v;
   String buffer;
   char c = 0;
-  File f;
-  
+
+  if(path.endsWith(".js")) {
+    if(SPIFFS.exists(path)) {
+      File f = SPIFFS.open(path, "r");
+      if(!f) {
+        if(DEBUG) { Serial.print(F("file open failed: ")); Serial.println(path); }
+        return false;
+      } else {
+       if(DEBUG) { Serial.print(F("reading script from file: ")); Serial.println(path); }
+       while (f.available()) {
+         c = f.read();
+         if(DEBUG) {Serial.write(c);}
+         buffer += c;
+       }  
+       f.close();
+       if(DEBUG) { Serial.println(F("file closed")); }
+       v = js_eval(js, buffer.c_str(), 0);
+       if(DEBUG) { Serial.print(F("js_eval() result: ")); Serial.println(js_str(js, v)); }
+       js_gc(js, v);
+       buffer = "";
+       return true;
+      }
+    } else {
+      if(DEBUG) { Serial.print(F("file not found: ")); Serial.println(path);}
+      return false;
+    }
+  } else {
+    if(DEBUG) { Serial.print(F("not a javascript file: ")); Serial.println(path);}
+    return false;    
+  }
+}
+
+void elkInit() {
+  //jsval_t v;
+
+  if(DEBUG) { Serial.print(F("Starting VM (Elk ")); Serial.print(ELK_VER); Serial.print(F(") ")); }
+  js = js_create(malloc(config.elk_alloc), config.elk_alloc);
+
   js_import(js, "millis", (uintptr_t) Sys_millis, "i");
   js_import(js, "delay", (uintptr_t) Sys_delay, "vi");
   js_import(js, "print", (uintptr_t) Sys_print, "vj");
@@ -324,24 +367,23 @@ void elkInit() {
   js_import(js, "WheelG", (uintptr_t) Neo_WheelG, "ii");
   js_import(js, "WheelB", (uintptr_t) Neo_WheelB, "ii");
   js_import(js, "jsinfo", (uintptr_t) js_info, "sm");
+  js_import(js, "load", (uintptr_t) js_load, "vs");
   js_import(js, "numPixels", (uintptr_t) Neo_numPixels, "i"); 
-  
-  f = SPIFFS.open("/init.js", "r");
-  if (!f) {
-    if(DEBUG) { Serial.println(F("init.js file open failed")); }
-  } else {
-    if(DEBUG) { Serial.println(F("Reading init.js script from File:")); }
-    while (f.available()) {
-      c = f.read();
-      if(DEBUG) {Serial.write(c);}
-      buffer += c;
-    }  
-    f.close();  //Close file
-    if(DEBUG) { Serial.println(F("File Closed")); }
-    v = js_eval(js, buffer.c_str(), 0);
-    if(DEBUG) { Serial.print(F("js_eval() result: ")); Serial.println(js_str(js, v)); }
+
+  if(elkLoad(String("/init.js"))) {
+    if(DEBUG) { Serial.println(F("/init.js loaded")); }
+    jsval_t v = js_eval(js, "typeof(loop);", 0);
+    if (String(js_str(js, v)).substring(0) == "\"function\"") {
+      if(DEBUG) { Serial.println(F("loop() function found")); }
+      js_init = true;
+    } else {
+      if(DEBUG) { Serial.println(F("loop() function not found")); }
+      js_init = false;
+    }
     js_gc(js, v);
-    buffer = "";
+  } else {
+    if(DEBUG) { Serial.println(F("/init.js failed")); }
+    js_init = false;
   }
   Serial.printf("Connected to NEOJS SerialREPL (Elk %s)\n", ELK_VER);
 }
