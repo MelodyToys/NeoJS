@@ -20,8 +20,7 @@ To get step-by-step instructions select one of the following links accordingly t
 [ESP32](https://github.com/espressif/arduino-esp32/blob/master/docs/arduino-ide/boards_manager.md)
 
 ### Install Arduino ESP8266 filesystem uploader
-You'll need to download and install this tool. See [here](https://github.com/esp8266/arduino-esp8266fs-plugin/blob/master/README.md) for more information.
-
+You'll need to download and install the spiffs upload tool. See [here](https://github.com/esp8266/arduino-esp8266fs-plugin/blob/master/README.md) for the ESP8266. Or [here](https://github.com/me-no-dev/arduino-esp32fs-plugin) fpr the ESP32.
 ### Installing Additional Arduino Libraries
 
 > ### Import using the Library Manager
