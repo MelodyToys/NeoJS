@@ -31,4 +31,10 @@ See the [Getting Started Guide](https://github.com/MelodyToys/NEOJS/blob/master/
 
 [Adafruit Industries](http://adafruit.com/) - [NeoPixel Driver](https://github.com/adafruit/Adafruit_NeoPixel)
 
+[Benoît Blanchon](https://github.com/bblanchon) - [ArduinoJson](https://github.com/bblanchon/ArduinoJson)
+
+[Espressif Systems](https://github.com/espressif) - ESP Microcontroller Boards
+
+[ESP8266 Community Forum](https://github.com/esp8266) - [ESP8266 core for Arduino](https://github.com/esp8266/Arduino)
+
 
