@@ -37,4 +37,4 @@ See the [Getting Started Guide](https://github.com/MelodyToys/NEOJS/blob/master/
 
 [ESP8266 Community Forum](https://github.com/esp8266) - [ESP8266 core for Arduino](https://github.com/esp8266/Arduino)
 
-
+[Arduino open-source project](https://github.com/arduino)
