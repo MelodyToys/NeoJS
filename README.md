@@ -2,13 +2,13 @@
 ![Image of NeoJS Logo](/logo.png)
 
 #### For the End User - [*(Release)*](https://github.com/MelodyToys/NEOJS/releases)
-**NEOJS** is a scriptable LED Controller that can be used by beginners and experts to learn, test, prototype, experiment, and deploy NeoPixel addressable LEDs and LED patterns, using a web UI with a standard web browser, over regular WiFi.
+NEOJS is a scriptable LED Controller that can be used by beginners and experts to learn, test, prototype, experiment, and deploy NeoPixel addressable LEDs and LED patterns.
 
-There’s no need to install software or drivers on your computer or device to get started. Everything needed to connect, control, program, and edit files is available ‘Out-of-the-Box’ using only your web browser. 
+There’s no need to install software or drivers on your computer or device to get started. Everything you'll need to connect, control, program, and edit files are available ‘Out-of-the-Box’ using only your web browser. 
 
-Educators use NEOJS as an educational ‘Toy’ to teach programming skills using a fun, interactive, easy to use platform. With features like the 'live' repl and the multi-user web UI, NEOJS provides a collaborative classroom environment that connects teachers and students like never before.
+Educators can use NEOJS as an educational ‘Toy’ to teach programming skills using a fun, interactive, and easy to use platform. NEOJS provides a collaborative classroom environment that connects teachers and students like never before with features like an interpreter environment, the 'live' REPL, and multi-user web UI. There are downloadable lesson-plans, and activity sheets to help get educators started with NEOJS.
 
-Use as a tool or a resource by artist, technicians, or anyone wanting to rapidly develop and deploy LED installaions.
+NEOJS is a ‘Blank Canvas’ ready to be used as a tool or a resource by artist, technicians, or anyone wanting to rapidly develop and deploy LED installations. With the integrated web server, led controller, and the JavaScript VM NEOJS provides and easy to use framework to build and deploy a fully customized LED installation.
   
 #### For the Developer - [*(Source)*](https://github.com/MelodyToys/NEOJS)
 **NEOJS** is also a Arduino Sketch that demonstrates the use of a script interpreter [(Elk JavaScript VM)](https://github.com/cesanta/elk) from within the Arduino Development Environment (IDE). Leveraging the Arduino development environment and several well known and tested Arduino drivers/libraries to create a scriptable LED Controller with WiFi access, web configuration, a web file editor (to edit the patterns), and a web (or serial) REPL to interact with the VM ‘live’. 
@@ -38,3 +38,6 @@ See the [Getting Started Guide](https://github.com/MelodyToys/NEOJS/blob/master/
 [ESP8266 Community Forum](https://github.com/esp8266) - [ESP8266 core for Arduino](https://github.com/esp8266/Arduino)
 
 [Arduino open-source project](https://github.com/arduino)
+
+
+
