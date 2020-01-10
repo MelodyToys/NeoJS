@@ -17,6 +17,7 @@
 #include <elk.h> 
 
 #define DEBUG     0
+#define ELK_VER   "0.0.22"
 
 struct Config {
   int  elk_alloc;
