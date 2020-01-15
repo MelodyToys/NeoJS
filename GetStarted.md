@@ -3,7 +3,7 @@
 ### Hardware
 You'll need a ESP8266 or ESP32 microcontroller developer board or module.
 
-### Drivers
+### USB Drivers
 
 Don't forget to install proper drivers for the USB-to-serial converter.
 If you're using a board along with a standalone FTDI adapter on Linux or
