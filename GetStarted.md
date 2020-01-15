@@ -12,10 +12,10 @@ If you're using a board along with a standalone FTDI adapter on Linux or
 Mac OS X, it should be shipped with the OS, for Windows drivers see
 [FTDI website](http://www.ftdichip.com/Drivers/VCP.htm).
 
-NodeMCU v2 boards come with Silabs CP2102 USB-to-serial chip for which you can
+Silabs CP210x USB-to-serial chip (NodeMCU v2) for which you can
 get driver from [here](https://www.silabs.com/products/development-tools/software/usb-to-uart-bridge-vcp-drivers).
 
-NodeMCU 0.9 and some other borad use the CH34x chip, Win7 driver can be found [here](http://www.wch-ic.com/downloads/category/30.html).
+CH34x chip, Win driver (NodeMCU 0.9) can be found [here](http://www.wch-ic.com/downloads/category/30.html).
 
 ### Install the Arduino Desktop IDE
 To get step-by-step instructions select one of the following link accordingly to your operating system.
