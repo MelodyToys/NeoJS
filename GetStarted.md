@@ -3,6 +3,18 @@
 ### Hardware
 You'll need a ESP8266 or ESP32 microcontroller developer board or module.
 
+### Drivers
+
+Don't forget to install proper drivers for the USB-to-serial converter.
+If you're using a board along with a standalone FTDI adapter on Linux or
+Mac OS X, it should be shipped with the OS, for Windows drivers see
+[FTDI website](http://www.ftdichip.com/Drivers/VCP.htm).
+
+NodeMCU v2 boards come with Silabs CP2102 USB-to-serial chip for which you can
+get driver from [here](https://www.silabs.com/products/mcu/Pages/USBtoUARTBridgeVCPDrivers.aspx).
+
+NodeMCU 0.9 and some other borad use the CH34x chip, Win7 driver can be found [here](http://www.wch.cn/download/CH341SER_EXE.html).
+
 ### Install the Arduino Desktop IDE
 To get step-by-step instructions select one of the following link accordingly to your operating system.
 
