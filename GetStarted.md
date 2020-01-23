@@ -69,7 +69,7 @@ Download and install the NeoJS project files. The latest release can be download
 
 Extract the archive into you Arduino home folder or somewhere within your local filesystem. 
 
-Open the NEOJS.ino file within the Arduino IDE. For more information on using the Arduino IDE can be found [here](https://www.arduino.cc/en/Tutorial/Foundations) and [here](https://www.arduino.cc/en/Guide/Environment) 
+Open the NeoJS.ino file within the Arduino IDE. For more information on using the Arduino IDE can be found [here](https://www.arduino.cc/en/Tutorial/Foundations) and [here](https://www.arduino.cc/en/Guide/Environment) 
 
 You'll need to change the board and board options within the IDE before uploading the firware *(make sure you selected an appropriate spiffs size)* 
 
