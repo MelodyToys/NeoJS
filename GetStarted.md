@@ -64,8 +64,8 @@ ESP32   - [AsyncTCP](https://github.com/me-no-dev/AsyncTCP/archive/master.zip)
 
 ESP8266 - [ESPAsyncTCP](https://github.com/me-no-dev/ESPAsyncTCP/archive/master.zip)
 
-### Installing NEOJS Files
-Download and install the NEOJS project files. The latest release can be download from [here](https://github.com/MelodyToys/NEOJS/releases). 
+### Installing NeoJS Files
+Download and install the NeoJS project files. The latest release can be download from [here](https://github.com/MelodyToys/NeoJS/releases). 
 
 Extract the archive into you Arduino home folder or somewhere within your local filesystem. 
 
@@ -77,7 +77,7 @@ Upload the Sketch using the menu (Sketch->Upload) or keyboard shortcut (Ctrl+U).
 
 After uploading the firmware you next need to upload the filesystem. Select Tools > ESP8266 Sketch Data Upload menu item. See [here](https://github.com/esp8266/arduino-esp8266fs-plugin/blob/master/README.md#usage) for more information. 
 
-If eveything was successful continue reading ["Using NEOJS"](https://github.com/MelodyToys/NEOJS/blob/master/UsingNEOJS.md)
+If eveything was successful continue reading ["Using NeoJS"](https://github.com/MelodyToys/NeoJS/blob/master/UsingNeoJS.md)
 
 
 
