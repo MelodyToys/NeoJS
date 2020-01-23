@@ -1,4 +1,4 @@
-# ** NeoJS ** is a 'JavaScript' scriptable NeoPixel LED Controller with an easy to use Web UI ‘Out-of-the-Box’
+# **NeoJS** is a 'JavaScript' scriptable NeoPixel LED Controller with an easy to use Web UI ‘Out-of-the-Box’
 ![Image of NeoJS Logo](/logo.png)
 
 #### For the End User - [*(Release)*](https://github.com/MelodyToys/NeoJS/releases)
