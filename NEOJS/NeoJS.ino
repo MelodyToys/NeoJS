@@ -214,9 +214,9 @@ bool loadConfig(Config &config) {
   
   strlcpy(config.wifi_sta_ssid, root["wifi_sta_ssid"] | "", sizeof(config.wifi_sta_ssid));
   strlcpy(config.wifi_sta_pass, root["wifi_sta_pass"] | "", sizeof(config.wifi_sta_pass));
-  strlcpy(config.wifi_ap_ssid, root["wifi_ap_ssid"] | "NEOJS", sizeof(config.wifi_ap_ssid));
+  strlcpy(config.wifi_ap_ssid, root["wifi_ap_ssid"] | "NeoJS", sizeof(config.wifi_ap_ssid));
   strlcpy(config.wifi_ap_pass, root["wifi_ap_pass"] | "", sizeof(config.wifi_ap_pass));
-  strlcpy(config.hostName, root["hostName"] | "NEOJS", sizeof(config.hostName));
+  strlcpy(config.hostName, root["hostName"] | "NeoJS", sizeof(config.hostName));
   strlcpy(config.http_username, root["http_username"] | "admin", sizeof(config.http_username));
   strlcpy(config.http_password, root["http_password"] | "admin", sizeof(config.http_password));
 
@@ -233,7 +233,7 @@ void onWsEvent(AsyncWebSocket * server, AsyncWebSocketClient * client, AwsEventT
   jsval_t v;
 
   if(type == WS_EVT_CONNECT){
-    client->printf("Connected to NEOJS WebREPL (Elk %s)", ELK_VER);
+    client->printf("Connected to NeoJS WebREPL (Elk %s)", ELK_VER);
     client->ping();
   } else if(type == WS_EVT_DATA){
     AwsFrameInfo * info = (AwsFrameInfo*)arg;
@@ -311,7 +311,7 @@ void elkLoop(){
 }
 
 String elkReload() {
-  ws.printfAll("Connected to NEOJS WebREPL (Elk %s)", ELK_VER);
+  ws.printfAll("Connected to NeoJS WebREPL (Elk %s)", ELK_VER);
   elkInit();
   return String("Reloading Elk VM ...");
 }
@@ -386,7 +386,7 @@ void elkInit() {
     if(DEBUG) { Serial.println(F("/init.js failed")); }
     js_init = false;
   }
-  Serial.printf("Connected to NEOJS SerialREPL (Elk %s)\n", ELK_VER);
+  Serial.printf("Connected to NeoJS SerialREPL (Elk %s)\n", ELK_VER);
 }
 
 int WheelR(int Pos) {
