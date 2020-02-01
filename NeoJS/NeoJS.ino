@@ -36,6 +36,7 @@ Config  config;
 String  serial_Repl = "";
 struct  js *js;
 bool    js_init = false;
+bool  spiffs_init = false;
 
 Adafruit_NeoPixel strip(10, 10, NEO_GRB + NEO_KHZ800); // Hack ~ set to anything ... then redefine in setup()
 
@@ -56,13 +57,17 @@ extern "C" int Neo_numPixels(void) { return strip.numPixels(); }
 extern "C" void js_load(const char *str) { elkLoad(String(str)); }
 
 void setup(){
-      
+  WiFi.persistent(false); // do not use SDK wifi settings in flash ?
+    
   Serial.begin(115200);
-  Serial.setDebugOutput(true);
+  Serial.setDebugOutput(false); // do not use wifi debug to console
   
   if(!SPIFFS.begin()) {
-    if(DEBUG) { Serial.println(F("SPIFFS Initialization ... failed")); }
-  } else { if(DEBUG) { Serial.println(F("SPIFFS Initialize....ok")); }}
+    Serial.println(F("SPIFFS Initialization ... failed"));
+  } else { 
+    if(DEBUG) { Serial.println(F("SPIFFS Initialize....ok")); }
+    spiffs_init = true;
+  }
 
   if(!loadConfig(config)) {
     if(DEBUG) { Serial.println(F("Config Initialization ... failed")); }
@@ -78,28 +83,19 @@ void setup(){
 
   WiFi.mode(WIFI_AP_STA);
 
-  if(config.wifi_ap_pass != "")
+  if(config.wifi_ap_pass != "" && config.wifi_ap_ssid != "")
     WiFi.softAP(config.wifi_ap_ssid, config.wifi_ap_pass);
   else
     if(config.wifi_ap_ssid != "")
       WiFi.softAP(config.wifi_ap_ssid);
     else
-      WiFi.softAP(config.hostName);
+      WiFi.softAP(config.hostName); // always start an AP ...
     
   if(config.wifi_sta_ssid != "") {
     if(config.wifi_sta_pass != "")
       WiFi.begin(config.wifi_sta_ssid, config.wifi_sta_pass);
     else
       WiFi.begin(config.wifi_sta_ssid);
-    if (WiFi.waitForConnectResult() != WL_CONNECTED) {
-      if(DEBUG) { Serial.println(F("STA: Conection Failed!")); }
-      WiFi.disconnect(false);
-      delay(1000); //FIXME NO! delays :)
-      if(config.wifi_sta_pass != "")
-        WiFi.begin(config.wifi_sta_ssid, config.wifi_sta_pass);
-      else
-        WiFi.begin(config.wifi_sta_ssid);
-    }
   }
 
   ArduinoOTA.onStart([]() { events.send("Update Start", "ota"); });
@@ -119,11 +115,19 @@ void setup(){
   });
   server.addHandler(&events);
 
-#ifdef ESP32
-  server.addHandler(new SPIFFSEditor(SPIFFS, config.http_username,config.http_password));
-#elif defined(ESP8266)
-  server.addHandler(new SPIFFSEditor(config.http_username,config.http_password));
-#endif
+  if(config.http_username != "") {
+  #ifdef ESP32
+    server.addHandler(new SPIFFSEditor(SPIFFS, config.http_username,config.http_password));
+  #elif defined(ESP8266)
+    server.addHandler(new SPIFFSEditor(config.http_username,config.http_password));
+  #endif
+  } else {
+  #ifdef ESP32
+    server.addHandler(new SPIFFSEditor(SPIFFS));
+  #elif defined(ESP8266)
+    server.addHandler(new SPIFFSEditor());
+  #endif
+  }
 
   server.on("/scan", HTTP_GET, [](AsyncWebServerRequest *request){
     String json = "[";
@@ -192,38 +196,53 @@ void loop(){
 
 bool loadConfig(Config &config) {
 
-  File configFile = SPIFFS.open("/config.json", "r");
-  if (!configFile) {
-    if(DEBUG) { Serial.println(F("Failed to open config file")); }
-    return false;
-  }
+  if(spiffs_init) {
+    File configFile = SPIFFS.open("/config.json", "r");
+    if (!configFile) {
+      if(DEBUG) { Serial.println(F("Failed to open config file")); }
+      //return false;
+    }
 
-  size_t size = configFile.size();
-  if (size > 1024) {
-    if(DEBUG) { Serial.println(F("Config file size is too large")); }
-    return false;
-  }
+    size_t size = configFile.size();
+    if (size > 1024) {
+      if(DEBUG) { Serial.println(F("Config file size is too large")); }
+      //return false;
+    }
 
-  StaticJsonBuffer<512> jsonBuffer;
+    StaticJsonBuffer<512> jsonBuffer;
 
-  JsonObject &root = jsonBuffer.parseObject(configFile);
-
-  config.led_pin = root["led_pin"] | 4;
-  config.led_count = root["led_count"] | 8;
-  config.elk_alloc = root["elk_alloc"] | 4096;
+    JsonObject &root = jsonBuffer.parseObject(configFile);
+    configFile.close();
+    config.led_pin = root["led_pin"] | 4;
+    config.led_count = root["led_count"] | 8;
+    config.elk_alloc = root["elk_alloc"] | 4096;
   
-  strlcpy(config.wifi_sta_ssid, root["wifi_sta_ssid"] | "", sizeof(config.wifi_sta_ssid));
-  strlcpy(config.wifi_sta_pass, root["wifi_sta_pass"] | "", sizeof(config.wifi_sta_pass));
-  strlcpy(config.wifi_ap_ssid, root["wifi_ap_ssid"] | "NeoJS", sizeof(config.wifi_ap_ssid));
-  strlcpy(config.wifi_ap_pass, root["wifi_ap_pass"] | "", sizeof(config.wifi_ap_pass));
-  strlcpy(config.hostName, root["hostName"] | "NeoJS", sizeof(config.hostName));
-  strlcpy(config.http_username, root["http_username"] | "admin", sizeof(config.http_username));
-  strlcpy(config.http_password, root["http_password"] | "admin", sizeof(config.http_password));
+    strlcpy(config.wifi_sta_ssid, root["wifi_sta_ssid"] | "", sizeof(config.wifi_sta_ssid));
+    strlcpy(config.wifi_sta_pass, root["wifi_sta_pass"] | "", sizeof(config.wifi_sta_pass));
+    strlcpy(config.wifi_ap_ssid, root["wifi_ap_ssid"] | "", sizeof(config.wifi_ap_ssid));
+    strlcpy(config.wifi_ap_pass, root["wifi_ap_pass"] | "", sizeof(config.wifi_ap_pass));
+    strlcpy(config.hostName, root["hostName"] | "NeoJS", sizeof(config.hostName));
+    strlcpy(config.http_username, root["http_username"] | "", sizeof(config.http_username));
+    strlcpy(config.http_password, root["http_password"] | "", sizeof(config.http_password));
 
-  configFile.close();
+    if (!root.success()) {
+      if(DEBUG) { Serial.println(F("Failed to read file, using default configuration")); }
+      return false;
+    }
 
-  if (!root.success()) {
+  } else {
     if(DEBUG) { Serial.println(F("Failed to read file, using default configuration")); }
+    config.led_pin = 4;
+    config.led_count = 8;
+    config.elk_alloc = 4096;
+  
+    strlcpy(config.wifi_sta_ssid, "", sizeof(config.wifi_sta_ssid));
+    strlcpy(config.wifi_sta_pass, "", sizeof(config.wifi_sta_pass));
+    strlcpy(config.wifi_ap_ssid, "", sizeof(config.wifi_ap_ssid));
+    strlcpy(config.wifi_ap_pass, "", sizeof(config.wifi_ap_pass));
+    strlcpy(config.hostName, "NeoJS", sizeof(config.hostName));
+    strlcpy(config.http_username, "", sizeof(config.http_username));
+    strlcpy(config.http_password, "", sizeof(config.http_password));
     return false;
   }
   return true;
@@ -371,22 +390,24 @@ void elkInit() {
   js_import(js, "load", (uintptr_t) js_load, "vs");
   js_import(js, "numPixels", (uintptr_t) Neo_numPixels, "i"); 
 
-  if(elkLoad(String("/init.js"))) {
-    if(DEBUG) { Serial.println(F("/init.js loaded")); }
-    jsval_t v = js_eval(js, "typeof(loop);", 0);
-    if (String(js_str(js, v)).substring(0) == "\"function\"") {
-      if(DEBUG) { Serial.println(F("loop() function found")); }
-      js_init = true;
+  if(spiffs_init) {
+    if(elkLoad(String("/init.js"))) {
+      if(DEBUG) { Serial.println(F("/init.js loaded")); }
+      jsval_t v = js_eval(js, "typeof(loop);", 0);
+      if (String(js_str(js, v)).substring(0) == "\"function\"") {
+        if(DEBUG) { Serial.println(F("loop() function found")); }
+        js_init = true;
+      } else {
+        if(DEBUG) { Serial.println(F("loop() function not found")); }
+        js_init = false;
+      }
+      js_gc(js, v);
     } else {
-      if(DEBUG) { Serial.println(F("loop() function not found")); }
+      if(DEBUG) { Serial.println(F("/init.js failed")); }
       js_init = false;
     }
-    js_gc(js, v);
-  } else {
-    if(DEBUG) { Serial.println(F("/init.js failed")); }
-    js_init = false;
+    Serial.printf("Connected to NeoJS SerialREPL (Elk %s)\n", ELK_VER);
   }
-  Serial.printf("Connected to NeoJS SerialREPL (Elk %s)\n", ELK_VER);
 }
 
 int WheelR(int Pos) {
