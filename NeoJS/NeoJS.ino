@@ -79,6 +79,7 @@ String  serial_Repl = "";
 String  telnet_Repl = "";
 struct  js *js;
 bool    js_init = false;
+String  spiffs_pwd  = "";
 bool    spiffs_init = false;
 bool    telnet_init = false;
 
@@ -225,19 +226,21 @@ void setup(){
   strip.show();
   strip.setBrightness(50);
   
-  elkInit();  
-
+  elkInit();
+  
+  WiFi.hostname(config.hostName);
   WiFi.mode(WIFI_AP_STA);
-  if(config.wifi_ap_pass != "" && config.wifi_ap_ssid != "") // make sure ssid is set too?
+  if((String(config.wifi_ap_pass) != "") && (String(config.wifi_ap_ssid) != "")) { // make sure ssid is set too?
     WiFi.softAP(config.wifi_ap_ssid, config.wifi_ap_pass);
-  else
-    if(config.wifi_ap_ssid != "")
+  } else {
+    if(String(config.wifi_ap_ssid) != "") {
       WiFi.softAP(config.wifi_ap_ssid);
-    else
+    } else {
       WiFi.softAP(config.hostName); // always start an AP ...
-    
-  if(config.wifi_sta_ssid != "") {
-    if(config.wifi_sta_pass != "")
+    }
+  }
+  if(String(config.wifi_sta_ssid) != "") {
+    if(String(config.wifi_sta_pass) != "")
       WiFi.begin(config.wifi_sta_ssid, config.wifi_sta_pass);
     else
       WiFi.begin(config.wifi_sta_ssid);
@@ -526,7 +529,7 @@ bool saveConfiguration(Config &config) {
     root["wifi_sta_pass"] = config.wifi_sta_pass;
     root["wifi_ap_ssid"] = config.wifi_ap_ssid; 
     root["wifi_ap_pass"] = config.wifi_ap_pass;
-    root["hostname"] = config.hostName;
+    root["hostName"] = config.hostName;
     root["http_username"] = config.http_username;
     root["http_password"] = config.http_password;
     if (root.printTo(configFile) == 0) {
