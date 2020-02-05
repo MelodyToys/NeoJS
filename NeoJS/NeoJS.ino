@@ -509,6 +509,36 @@ bool loadConfig(Config &config) {
   return true;
 }
 
+bool saveConfiguration(Config &config) {
+  if(spiffs_init) {
+    SPIFFS.remove("/config.json");
+    File configFile = SPIFFS.open("/config.json", "w");
+    if (!configFile) {
+      if(DEBUG) { Serial.println(F("Failed to create Config file")); }
+      return false;
+    }
+    StaticJsonBuffer<256> jsonBuffer;
+    JsonObject &root = jsonBuffer.createObject();
+    root["led_pin"] = config.led_pin;
+    root["led_count"] = config.led_count;
+    root["elk_alloc"] = config.elk_alloc;
+    root["wifi_sta_ssid"] = config.wifi_sta_ssid;
+    root["wifi_sta_pass"] = config.wifi_sta_pass;
+    root["wifi_ap_ssid"] = config.wifi_ap_ssid; 
+    root["wifi_ap_pass"] = config.wifi_ap_pass;
+    root["hostname"] = config.hostName;
+    root["http_username"] = config.http_username;
+    root["http_password"] = config.http_password;
+    if (root.printTo(configFile) == 0) {
+      if(DEBUG) { Serial.println(F("Failed to write to Config file")); }
+      return false;
+    }
+    configFile.close();
+    if(DEBUG) { Serial.println(F("Config File write complete")); }
+    return true;
+  }
+}
+
 void onWsEvent(AsyncWebSocket * server, AsyncWebSocketClient * client, AwsEventType type, void * arg, uint8_t *data, size_t len) {
   String Responce;
   if(type == WS_EVT_CONNECT){
@@ -561,12 +591,19 @@ void NeoJSLoop(){
         c = Serial.read();
       }
       Responce = processCommand(serial_Repl);
-      Serial.println(serial_Repl); // echo
+      //Serial.println(serial_Repl); // echo
       Serial.println(Responce);
       serial_Repl = "";
       Responce = "";
-    } else
+    } else if((c == 0x7F) || (c == '\b')) { // backspace
+        if(serial_Repl.length() > 0) {
+          serial_Repl.remove(serial_Repl.length()-1);
+          Serial.write(" \b", 2);
+        }
+    } else {
+      Serial.write(c);
       serial_Repl += c;
+    }
   }
   
   if(!TelnetStream.disconnected()) {
@@ -577,7 +614,7 @@ void NeoJSLoop(){
     }
     if(TelnetStream.available() > 0) { // FIXME: change telnet to a multi client async solution ...
       c = TelnetStream.read();
-      if(c == '\n' || c == '\r') {
+      if((c == '\n') || (c == '\r')) {
         if(TelnetStream.peek() == '\r' || TelnetStream.peek() == '\n') { //f*%k microsoft
           c = TelnetStream.read();
         }
@@ -586,12 +623,20 @@ void NeoJSLoop(){
         TelnetStream.println(Responce);
         telnet_Repl = "";
         Responce = "";
-      } else
+      } else if((c == 0x7F) || (c == '\b')) { // backspace
+          if(telnet_Repl.length() > 0) {  
+            telnet_Repl.remove(telnet_Repl.length()-1);
+            TelnetStream.write(" \b", 2);
+          }
+      } else { //FIXME: Do we expand command line editing to include arrow keys & history?
         telnet_Repl += c;
+      }
     }
   } else {
     if(telnet_init) {
       if(DEBUG) { Serial.println("Telnet Disconnected"); }
+      telnet_Repl = "";
+      Responce = "";
       telnet_init = false;
     }
   }    
