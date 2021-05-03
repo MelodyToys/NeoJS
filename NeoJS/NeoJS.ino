@@ -15,7 +15,9 @@
 #include <ESPAsyncWebServer.h>
 #include <SPIFFSEditor.h>
 #include <Adafruit_NeoPixel.h>
-#include <elk.h> 
+extern "C" {
+  #include <elk.h> 
+}
 
 #define DEBUG     0
 #define ELK_VER   "0.0.22"
@@ -79,7 +81,6 @@ String  serial_Repl = "";
 String  telnet_Repl = "";
 struct  js *js;
 bool    js_init = false;
-String  spiffs_pwd  = "";
 bool    spiffs_init = false;
 bool    telnet_init = false;
 
@@ -134,7 +135,7 @@ bool elkLoad(String path) {
        if(DEBUG) { Serial.println(F("file closed")); }
        v = js_eval(js, buffer.c_str(), 0);
        if(DEBUG) { Serial.print(F("js_eval() result: ")); Serial.println(js_str(js, v)); }
-       js_gc(js, v);
+       //js_gc(js, v);
        buffer = "";
        return true;
       }
@@ -148,34 +149,37 @@ bool elkLoad(String path) {
   }
 }
 
-extern "C" void Neo_show() { strip.show(); }
-extern "C" void Neo_clear() { strip.clear(); }
-extern "C" void Neo_setPixelColor(uint16_t n, int r, int g, int b) { strip.setPixelColor(n, strip.Color(r, g, b)); }
-extern "C" void Sys_delay(unsigned long milli) { delay(milli); }
-extern "C" unsigned long Sys_millis() { millis(); }
-extern "C" void Sys_print(jsval_t v) { Serial.println(js_str(js, v)); }
-extern "C" int Neo_WheelR(int wheelpos) { return WheelR(wheelpos); }
-extern "C" int Neo_WheelG(int wheelpos) { return WheelG(wheelpos); }
-extern "C" int Neo_WheelB(int wheelpos) { return WheelB(wheelpos); }
-extern "C" int Neo_numPixels(void) { return strip.numPixels(); }
-extern "C" void js_load(const char *str) { elkLoad(String(str)); }
+extern "C" {
+  void Neo_show() { strip.show(); }
+  void Neo_clear() { strip.clear(); }
+  void Neo_setPixelColor(uint16_t n, int r, int g, int b) { strip.setPixelColor(n, strip.Color(r, g, b)); }
+  void Sys_delay(unsigned long milli) { delay(milli); }
+  unsigned long Sys_millis() { millis(); }
+  void Sys_print(jsval_t v) { Serial.println(js_str(js, v)); }
+  int Neo_WheelR(int wheelpos) { return WheelR(wheelpos); }
+  int Neo_WheelG(int wheelpos) { return WheelG(wheelpos); }
+  int Neo_WheelB(int wheelpos) { return WheelB(wheelpos); }
+  int Neo_numPixels(void) { return strip.numPixels(); }
+  void js_load(const char *str) { elkLoad(String(str)); }
+}
 
 void elkInit() {
   if(DEBUG) { Serial.print(F("Starting VM (Elk ")); Serial.print(ELK_VER); Serial.print(F(") ")); }
   js = js_create(malloc(config.elk_alloc), config.elk_alloc);
+  jsval_t global = js_glob(js);
 
-  js_import(js, "millis", (uintptr_t) Sys_millis, "i");
-  js_import(js, "delay", (uintptr_t) Sys_delay, "vi");
-  js_import(js, "print", (uintptr_t) Sys_print, "vj");
-  js_import(js, "show", (uintptr_t) Neo_show, "v");
-  js_import(js, "clear", (uintptr_t) Neo_clear, "v");
-  js_import(js, "setPixelColor", (uintptr_t) Neo_setPixelColor, "viiii");
-  js_import(js, "WheelR", (uintptr_t) Neo_WheelR, "ii");
-  js_import(js, "WheelG", (uintptr_t) Neo_WheelG, "ii");
-  js_import(js, "WheelB", (uintptr_t) Neo_WheelB, "ii");
-  js_import(js, "jsinfo", (uintptr_t) js_info, "sm");
-  js_import(js, "load", (uintptr_t) js_load, "vs");
-  js_import(js, "numPixels", (uintptr_t) Neo_numPixels, "i"); 
+  js_set(js, global, "millis", js_import(js, (uintptr_t) Sys_millis, "i"));
+  js_set(js, global, "delay", js_import(js, (uintptr_t) Sys_delay, "vi"));
+  js_set(js, global, "print", js_import(js, (uintptr_t) Sys_print, "vj"));
+  js_set(js, global, "show", js_import(js, (uintptr_t) Neo_show, "v"));
+  js_set(js, global, "clear", js_import(js, (uintptr_t) Neo_clear, "v"));
+  js_set(js, global, "setPixelColor", js_import(js, (uintptr_t) Neo_setPixelColor, "viiii"));
+  js_set(js, global, "WheelR", js_import(js, (uintptr_t) Neo_WheelR, "ii"));
+  js_set(js, global, "WheelG", js_import(js, (uintptr_t) Neo_WheelG, "ii"));
+  js_set(js, global, "WheelB", js_import(js, (uintptr_t) Neo_WheelB, "ii"));
+//js_set(js, global, "jsinfo", js_import(js, (uintptr_t) js_info, "sm"));
+  js_set(js, global, "load", js_import(js, (uintptr_t) js_load, "vs"));
+  js_set(js, global, "numPixels", js_import(js, (uintptr_t) Neo_numPixels, "i")); 
 
   if(spiffs_init) {
     if(elkLoad(String("/init.js"))) {
@@ -188,7 +192,7 @@ void elkInit() {
         if(DEBUG) { Serial.println(F("loop() function not found")); }
         js_init = false;
       }
-      js_gc(js, v);
+      //js_gc(js, v);
     } else {
       if(DEBUG) { Serial.println(F("/init.js failed")); }
       js_init = false;
@@ -226,21 +230,19 @@ void setup(){
   strip.show();
   strip.setBrightness(50);
   
-  elkInit();
-  
-  WiFi.hostname(config.hostName);
+  elkInit();  
+
   WiFi.mode(WIFI_AP_STA);
-  if((String(config.wifi_ap_pass) != "") && (String(config.wifi_ap_ssid) != "")) { // make sure ssid is set too?
+  if(config.wifi_ap_pass != "" && config.wifi_ap_ssid != "") // make sure ssid is set too?
     WiFi.softAP(config.wifi_ap_ssid, config.wifi_ap_pass);
-  } else {
-    if(String(config.wifi_ap_ssid) != "") {
+  else
+    if(config.wifi_ap_ssid != "")
       WiFi.softAP(config.wifi_ap_ssid);
-    } else {
+    else
       WiFi.softAP(config.hostName); // always start an AP ...
-    }
-  }
-  if(String(config.wifi_sta_ssid) != "") {
-    if(String(config.wifi_sta_pass) != "")
+    
+  if(config.wifi_sta_ssid != "") {
+    if(config.wifi_sta_pass != "")
       WiFi.begin(config.wifi_sta_ssid, config.wifi_sta_pass);
     else
       WiFi.begin(config.wifi_sta_ssid);
@@ -344,7 +346,7 @@ String processCommand(String cmdString) {
   }
   v = js_eval(js, cmdString.c_str(), 0);
   Responce = js_str(js, v);
-  js_gc(js, v);
+  //js_gc(js, v);
   return Responce;
 }
 
@@ -529,7 +531,7 @@ bool saveConfiguration(Config &config) {
     root["wifi_sta_pass"] = config.wifi_sta_pass;
     root["wifi_ap_ssid"] = config.wifi_ap_ssid; 
     root["wifi_ap_pass"] = config.wifi_ap_pass;
-    root["hostName"] = config.hostName;
+    root["hostname"] = config.hostName;
     root["http_username"] = config.http_username;
     root["http_password"] = config.http_password;
     if (root.printTo(configFile) == 0) {
