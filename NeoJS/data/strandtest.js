@@ -114,4 +114,7 @@ let loop = function() {
     }
 };
 
-
+//if(patCurr === 8){a=8;} else if(patCurr === 7){a=7;} else if(patCurr === 6){a=6;} else if(patCurr === 5){a=5;} else if(patCurr === 4){a=4;} else if(patCurr === 3){a=3;} else if(patCurr === 2){a=2;} else if(patCurr === 1){a=1;} else if(patCurr === 0){a=0;}
+//if(patCurr === 8) {a=8; return;} if(patCurr === 7) {a=7; return;} if(patCurr === 6) {a=6; return;} if(patCurr === 5) {a=5; return;} if(patCurr === 4) {a=4; return;} if(patCurr === 3) {a=3; return;} if(patCurr === 2) {a=2; return;} if(patCurr === 1) {a=1; return;} if(patCurr === 0) {a=0; return;}
+//if(patCurr === 8) a=8; if(patCurr === 7) a=7; if(patCurr === 6) a=6; if(patCurr === 5) a=5; if(patCurr === 4) a=4; if(patCurr === 3) a=3; if(patCurr === 2) a=2; if(patCurr === 1) a=1; if(patCurr === 0) a=0;
+ 
