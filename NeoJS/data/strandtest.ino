@@ -35,15 +35,15 @@ void loop() {
   }  
   if(curMill - pixPrev >= pixInte) {
     pixPrev = curMill;
-    if(patCurr == 8) { thtrChsRnbw(); return; }
-    if(patCurr == 7) { rnbwCyc(); return; }
-    if(patCurr == 6) { rnbw(); return; }
-    if(patCurr == 5) { thtrChs(0, 0, 127); return; }     // Blue
-    if(patCurr == 4) { thtrChs(127, 0, 0); return; }     // Red
-    if(patCurr == 3) { thtrChs(127, 127, 127); return; } // White
-    if(patCurr == 2) { clrWp(0, 0, 255); return; }       // Blue
-    if(patCurr == 1) { clrWp(0, 255, 0); return; }       // Green
-    if(patCurr == 0) { clrWp(255, 0, 0); return; }       // Red
+    if(patCurr == 8) thtrChsRnbw();
+    else if(patCurr == 7) rnbwCyc();
+    else if(patCurr == 6) rnbw();
+    else if(patCurr == 5) thtrChs(0, 0, 127);    // Blue
+    else if(patCurr == 4) thtrChs(127, 0, 0);    // Red
+    else if(patCurr == 3) thtrChs(127, 127, 127);// White
+    else if(patCurr == 2) clrWp(0, 0, 255);      // Blue
+    else if(patCurr == 1) clrWp(0, 255, 0);      // Green
+    else if(patCurr == 0) clrWp(255, 0, 0);      // Red
   }    
 }
 
