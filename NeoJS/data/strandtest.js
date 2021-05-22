@@ -2,8 +2,8 @@
 // This is a port of strandtest_nodelay.ino to JavaScript (Elk)
 
 let patPrev = 0,         // Previous Pattern Millis
-    patCurr = 0;         // Current Pattern Number
-let patInte = 5500,      // Pattern Interval (ms)
+    patCurr = 0,         // Current Pattern Number
+    patInte = 5500,      // Pattern Interval (ms)
     pixPrev = 0,         // Previous Pixel Millis
     pixInte = 45,        // Pixel Interval (ms)
     pixQueu = 0,         // Pixel Queue
@@ -12,7 +12,7 @@ let patInte = 5500,      // Pattern Interval (ms)
     pixNum = numPixels();// Number of Pixels
 
 // colorWipe(r , g, b)
-let clrWp = /*test*/function(r, g, b) {
+let clrWp = function(r, g, b) {
     setPixelColor(pixCurr, r, g, b);
     show();
     pixCurr++;
@@ -22,7 +22,6 @@ let clrWp = /*test*/function(r, g, b) {
     }
 };
 
-/* this is a block test */
 // rainbow()
 let rnbw = function() {
     let i = 0,
@@ -36,9 +35,6 @@ let rnbw = function() {
     pixCycl++;
     if(pixCycl >= 256) pixCycl = 0;
 };
-/*
- Here is another one
-*/
 
 // rainbowCycle()
 let rnbwCyc = function() {
@@ -100,6 +96,72 @@ let loop = function() {
         patCurr++;
         if(patCurr >= 9) patCurr = 0;
     }
+
+    // else method
+    if(curMill - pixPrev >= pixInte) {
+        pixPrev = curMill;
+        if(patCurr === 8) {
+            thtrChsRnbw(); 
+        } else if(patCurr === 7) {
+            rnbwCyc(); 
+        } else if(patCurr === 6) {
+            rnbw();
+        } else if(patCurr === 5) {
+            thtrChs(0, 0, 127);    // Blue
+        } else if(patCurr === 4) {
+            thtrChs(127, 0, 0);    // Red
+        } else if(patCurr === 3) {
+            thtrChs(127, 127, 127);// White
+        } else if(patCurr === 2) {
+            clrWp(0, 0, 255);      // Blue
+        } else if(patCurr === 1) {
+            clrWp(0, 255, 0);      // Green
+        } else if(patCurr === 0) {
+            clrWp(255, 0, 0);      // Red
+        }
+    }
+/*    
+    // return method
+    if(curMill - pixPrev >= pixInte) {
+        pixPrev = curMill;
+        if(patCurr === 8) {
+            thtrChsRnbw();
+            return;
+        }
+        if(patCurr === 7) {
+            rnbwCyc();
+            return;
+        }
+        if(patCurr === 6) {
+            rnbw();
+            return;
+        }
+        if(patCurr === 5) {
+            thtrChs(0, 0, 127);    // Blue
+            return;
+        }
+        if(patCurr === 4) {
+            thtrChs(127, 0, 0);    // Red
+            return;
+        }
+        if(patCurr === 3) {
+            thtrChs(127, 127, 127);// White
+            return;
+        }
+        if(patCurr === 2) {
+            clrWp(0, 0, 255);      // Blue
+            return;
+        }
+        if(patCurr === 1) {
+            clrWp(0, 255, 0);      // Green
+            return;
+        }
+        if(patCurr === 0) {
+            clrWp(255, 0, 0);      // Red
+        }
+    }
+    
+    // nothing method
     if(curMill - pixPrev >= pixInte) {
         pixPrev = curMill;
         if(patCurr === 8) thtrChsRnbw();
@@ -112,9 +174,5 @@ let loop = function() {
         if(patCurr === 1) clrWp(0, 255, 0);      // Green
         if(patCurr === 0) clrWp(255, 0, 0);      // Red
     }
+*/  
 };
-
-//if(patCurr === 8){a=8;} else if(patCurr === 7){a=7;} else if(patCurr === 6){a=6;} else if(patCurr === 5){a=5;} else if(patCurr === 4){a=4;} else if(patCurr === 3){a=3;} else if(patCurr === 2){a=2;} else if(patCurr === 1){a=1;} else if(patCurr === 0){a=0;}
-//if(patCurr === 8) {a=8; return;} if(patCurr === 7) {a=7; return;} if(patCurr === 6) {a=6; return;} if(patCurr === 5) {a=5; return;} if(patCurr === 4) {a=4; return;} if(patCurr === 3) {a=3; return;} if(patCurr === 2) {a=2; return;} if(patCurr === 1) {a=1; return;} if(patCurr === 0) {a=0; return;}
-//if(patCurr === 8) a=8; if(patCurr === 7) a=7; if(patCurr === 6) a=6; if(patCurr === 5) a=5; if(patCurr === 4) a=4; if(patCurr === 3) a=3; if(patCurr === 2) a=2; if(patCurr === 1) a=1; if(patCurr === 0) a=0;
- 
