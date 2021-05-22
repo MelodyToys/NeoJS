@@ -96,8 +96,6 @@ let loop = function() {
         patCurr++;
         if(patCurr >= 9) patCurr = 0;
     }
-
-    // else method
     if(curMill - pixPrev >= pixInte) {
         pixPrev = curMill;
         if(patCurr === 8) thtrChsRnbw(); 
@@ -110,59 +108,4 @@ let loop = function() {
         else if(patCurr === 1) clrWp(0, 255, 0);      // Green
         else if(patCurr === 0) clrWp(255, 0, 0);      // Red
     }
-/*    
-    // return method
-    if(curMill - pixPrev >= pixInte) {
-        pixPrev = curMill;
-        if(patCurr === 8) {
-            thtrChsRnbw();
-            return;
-        }
-        if(patCurr === 7) {
-            rnbwCyc();
-            return;
-        }
-        if(patCurr === 6) {
-            rnbw();
-            return;
-        }
-        if(patCurr === 5) {
-            thtrChs(0, 0, 127);    // Blue
-            return;
-        }
-        if(patCurr === 4) {
-            thtrChs(127, 0, 0);    // Red
-            return;
-        }
-        if(patCurr === 3) {
-            thtrChs(127, 127, 127);// White
-            return;
-        }
-        if(patCurr === 2) {
-            clrWp(0, 0, 255);      // Blue
-            return;
-        }
-        if(patCurr === 1) {
-            clrWp(0, 255, 0);      // Green
-            return;
-        }
-        if(patCurr === 0) {
-            clrWp(255, 0, 0);      // Red
-        }
-    }
-    
-    // nothing method
-    if(curMill - pixPrev >= pixInte) {
-        pixPrev = curMill;
-        if(patCurr === 8) thtrChsRnbw();
-        if(patCurr === 7) rnbwCyc();
-        if(patCurr === 6) rnbw();
-        if(patCurr === 5) thtrChs(0, 0, 127);    // Blue
-        if(patCurr === 4) thtrChs(127, 0, 0);    // Red
-        if(patCurr === 3) thtrChs(127, 127, 127);// White
-        if(patCurr === 2) clrWp(0, 0, 255);      // Blue
-        if(patCurr === 1) clrWp(0, 255, 0);      // Green
-        if(patCurr === 0) clrWp(255, 0, 0);      // Red
-    }
-*/  
 };
