@@ -1,111 +1,96 @@
 // NeoJS Demo ~ sfranzyshen
-// This is a port of strandtest_nodelay.ino to JavaScript (Elk)
+// This is a port of strandtest.ino to JavaScript (Elk)
 
-let patPrev = 0,         // Previous Pattern Millis
-    patCurr = 0,         // Current Pattern Number
-    patInte = 5500,      // Pattern Interval (ms)
-    pixPrev = 0,         // Previous Pixel Millis
-    pixInte = 45,        // Pixel Interval (ms)
-    pixQueu = 0,         // Pixel Queue
-    pixCycl = 0,         // Pixel Cycle
-    pixCurr = 0,         // Current Pixel Number
-    pixNum = numPixels();// Number of Pixels
+// colorWipe()
+let colorWipe = function(color, wait) {
+  let i = 0;
+  
+  while(i < Pixel.numPixels()) {
+    Pixel.setPixelColor32(i, color);
+    Pixel.show();
+    delay(wait);
+	i++;
+  }
+};
 
-// colorWipe(r , g, b)
-let clrWp = function(r, g, b) {
-    setPixelColor(pixCurr, r, g, b);
-    show();
-    pixCurr++;
-    if(pixCurr >= pixNum) {
-        pixCurr = 0;
-        clear();
+// theaterChase()
+let theaterChase = function(color, wait) {
+  let a = 0, b = 0, c = 0;
+  
+  while(a < 10) {
+	b = 0;
+    while(b < 3) {
+      Pixel.clear();
+	  c = b;
+      while(c < Pixel.numPixels()) {
+        Pixel.setPixelColor32(c, color);
+		c += 3;
+      }
+      Pixel.show();
+      delay(wait);
+	  b++;
     }
+	a++;
+  }
 };
 
 // rainbow()
-let rnbw = function() {
-    let i = 0,
-        p;
-    while(i < pixNum) {
-        p = (i + pixCycl) & 255;
-        setPixelColor(i, WheelR(p), WheelG(p), WheelB(p));
-        i++;
+let rainbow = function(wait) {
+  let firstPixelHue = 0, i = 0, pixelHue = 0;
+  
+  while(firstPixelHue < 5 * 65536) {
+	i = 0;
+    while(i < Pixel.numPixels()) {
+      pixelHue = firstPixelHue + (i * 65536 / Pixel.numPixels());
+      Pixel.setPixelColor32(i, Pixel.gamma32(Pixel.ColorHSV(pixelHue)));
+	  i++;
     }
-    show();
-    pixCycl++;
-    if(pixCycl >= 256) pixCycl = 0;
-};
-
-// rainbowCycle()
-let rnbwCyc = function() {
-    let i = 0,
-        p;
-    while(i < pixNum) {
-        p = ((i * 256 / pixNum) + pixCycl) & 255;
-        setPixelColor(i, WheelR(p), WheelG(p), WheelB(p));
-        i++;
-    }
-    show();
-    pixCycl++;
-    if(pixCycl >= 256 * 5) pixCycl = 0;
-};
-
-// theaterChase(r, g, b)
-let thtrChs = function(r, g, b) {
-    let i = 0;
-    while(i < pixNum) {
-        setPixelColor(i + pixQueu, r, g, b);
-        i = i + 3;
-    }
-    show();
-    i = 0;
-    while(i < pixNum) {
-        setPixelColor(i + pixQueu, 0, 0, 0);
-        i = i + 3;
-    }
-    pixQueu++;
-    if(pixQueu >= 3) pixQueu = 0;
+    Pixel.show();
+    delay(wait);
+	firstPixelHue += 256;
+  }
 };
 
 // theaterChaseRainbow()
-let thtrChsRnbw = function() {
-    let i = 0,
-        p;
-    while(i < pixNum) {
-        p = (i + pixCycl) % 255;
-        setPixelColor(i + pixQueu, WheelR(p), WheelG(p), WheelB(p));
-        i = i + 3;
+let theaterChaseRainbow = function(wait) {
+  let firstPixelHue = 0, a = 0, b = 0, c = 0, hue = 0, color = 0;
+  
+  while(a < 30) {
+	b = 0;
+    while(b < 3) {
+      Pixel.clear();
+	  c = b;
+      while(c < Pixel.numPixels()) {
+        hue = firstPixelHue + c * 65536 / Pixel.numPixels();
+        color = Pixel.gamma32(Pixel.ColorHSV(hue));
+        Pixel.setPixelColor32(c, color);
+		c += 3;
+      }
+      Pixel.show();
+      delay(wait);
+      firstPixelHue += 65536 / 90;
+	  b++;
     }
-    show();
-    i = 0;
-    while(i < pixNum) {
-        setPixelColor(i + pixQueu, 0, 0, 0);
-        i = i + 3;
-    }
-    pixQueu++;
-    pixCycl++;
-    if(pixQueu >= 3) pixQueu = 0;
-    if(pixCycl >= 256) pixCycl = 0;
+	a++;
+  }
+};
+
+// setup()
+let setup = function() {
+  Serial.println("strandtest ... start");
 };
 
 // loop()
 let loop = function() {
-    let curMill = millis();
-    if(curMill - patPrev >= patInte) {
-        patPrev = curMill;
-        patCurr++;
-        if(patCurr >= 9) patCurr = 0;
-    }
-    if(curMill - pixPrev >= pixInte) {
-        pixPrev = curMill;
-        if(patCurr === 8) thtrChsRnbw(); 
-        else if(patCurr === 7) rnbwCyc(); 
-        else if(patCurr === 6) rnbw();
-        else if(patCurr === 5) thtrChs(0, 0, 127);    // Blue
-        else if(patCurr === 4) thtrChs(127, 0, 0);    // Red
-        else if(patCurr === 3) thtrChs(127, 127, 127);// White
-        else if(patCurr === 2) clrWp(0, 0, 255);      // Blue
-        else if(patCurr === 1) clrWp(0, 255, 0);      // Green
-        else if(patCurr === 0) clrWp(255, 0, 0);      // Red
-    }
+  colorWipe(Pixel.Color(255, 0, 0), 50); // Red
+  colorWipe(Pixel.Color(0, 255, 0), 50); // Green
+  colorWipe(Pixel.Color(0, 0, 255), 50); // Blue
+
+  theaterChase(Pixel.Color(127, 127, 127), 50); // White
+  theaterChase(Pixel.Color(127, 0, 0), 50); // Red
+  theaterChase(Pixel.Color( 0, 0, 127), 50); // Blue
+
+  rainbow(10);
+  theaterChaseRainbow(50);
+  Serial.println("strandtest ... loop");
 };

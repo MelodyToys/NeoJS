@@ -1,6 +1,5 @@
 #include <ArduinoJson.h>
 #include <ArduinoOTA.h>
-#include <TelnetStream.h>
 #ifdef ESP32
 #include <FS.h>
 #include <SPIFFS.h>
@@ -20,8 +19,7 @@ extern "C" {
 }
 
 #define DEBUG     0
-#define ELK_VER   "0.0.22"
-#define NEOJS_VER "1.0-PRE"
+#define NEOJS_VER "2.0-PRE"
 
 typedef String (*cmd_action_t)(const char *);
 
@@ -41,7 +39,7 @@ String rebootCmd(const char *arg); // reboot hardware reset
 String reloadCmd(const char *arg); // reload virtual machine
 String wifiCmd(const char *arg);   // wifi commands
 String configCmd(const char *arg); // config commands
-String verCmd(const char *arg);    // concatenate file
+String verCmd(const char *arg);    // version
 String infoCmd(const char *arg);   // info 
 String helpCmd(const char *arg);   // help 
 
@@ -78,11 +76,10 @@ struct Config {
 
 Config  config;
 String  serial_Repl = "";
-String  telnet_Repl = "";
 struct  js *js;
 bool    js_init = false;
+String  spiffs_pwd  = "";
 bool    spiffs_init = false;
-bool    telnet_init = false;
 
 Adafruit_NeoPixel strip(10, 10, NEO_GRB + NEO_KHZ800); // FIXME: Hack ~ set to anything ... then redefine in setup()
 
@@ -113,6 +110,19 @@ int WheelB(int Pos) {
   return 0;
 }
 
+uint32_t Wheel32(byte WheelPos) {
+  WheelPos = 255 - WheelPos;
+  if(WheelPos < 85) {
+    return strip.Color(255 - WheelPos * 3, 0, WheelPos * 3);
+  }
+  if(WheelPos < 170) {
+    WheelPos -= 85;
+    return strip.Color(0, WheelPos * 3, 255 - WheelPos * 3);
+  }
+  WheelPos -= 170;
+  return strip.Color(WheelPos * 3, 255 - WheelPos * 3, 0);
+}
+
 bool elkLoad(String path) {
   jsval_t v;
   String buffer;
@@ -133,7 +143,7 @@ bool elkLoad(String path) {
        }  
        f.close();
        if(DEBUG) { Serial.println(F("file closed")); }
-       v = js_eval(js, buffer.c_str(), 0);
+       v = js_eval(js, buffer.c_str(), buffer.length());
        if(DEBUG) { Serial.print(F("js_eval() result: ")); Serial.println(js_str(js, v)); }
        //js_gc(js, v);
        buffer = "";
@@ -150,12 +160,33 @@ bool elkLoad(String path) {
 }
 
 extern "C" {
+  unsigned long Sys_millis() { millis(); }
+  void Sys_println(jsval_t v) { 
+    Serial.println(js_str(js, v));
+    ws.printfAll("%s", js_str(js, v));
+  }
+  
+  // a little hack for async type delay()'s
+  void Sys_delay(unsigned long milli) {
+    unsigned long targetMillis = millis() + milli;
+	  unsigned long currentMillis = millis();
+  
+	  while(currentMillis < targetMillis) {
+		  serialRepl();
+		  ArduinoOTA.handle();
+		  ws.cleanupClients();
+		  yield();
+		  currentMillis = millis();
+	  }
+  }
+  
   void Neo_show() { strip.show(); }
   void Neo_clear() { strip.clear(); }
   void Neo_setPixelColor(uint16_t n, int r, int g, int b) { strip.setPixelColor(n, strip.Color(r, g, b)); }
-  void Sys_delay(unsigned long milli) { delay(milli); }
-  unsigned long Sys_millis() { millis(); }
-  void Sys_print(jsval_t v) { Serial.println(js_str(js, v)); }
+  void Neo_setPixelColor32(uint16_t n, uint32_t c) { strip.setPixelColor(n, c); }  
+//  uint32_t Neo_gamma32(uint32_t x) { return strip.gamma32(x); }
+//  uint32_t Neo_ColorHSV(uint16_t hue, uint8_t sat, uint8_t val){ return strip.ColorHSV(hue); }
+  uint32_t Neo_Wheel32(byte wheelpos) { return Wheel32(wheelpos); }
   int Neo_WheelR(int wheelpos) { return WheelR(wheelpos); }
   int Neo_WheelG(int wheelpos) { return WheelG(wheelpos); }
   int Neo_WheelB(int wheelpos) { return WheelB(wheelpos); }
@@ -164,27 +195,39 @@ extern "C" {
 }
 
 void elkInit() {
-  if(DEBUG) { Serial.print(F("Starting VM (Elk ")); Serial.print(ELK_VER); Serial.print(F(") ")); }
+  if(DEBUG) { Serial.print(F("Starting VM (Elk ")); Serial.print(JS_VERSION); Serial.print(F(") ")); }
   js = js_create(malloc(config.elk_alloc), config.elk_alloc);
-  jsval_t global = js_glob(js);
-
+  jsval_t global = js_glob(js), serial = js_mkobj(js), pixel = js_mkobj(js);
+  js_set(js, global, "Serial", serial);
+  js_set(js, global, "Pixel", pixel);
+  
   js_set(js, global, "millis", js_import(js, (uintptr_t) Sys_millis, "i"));
   js_set(js, global, "delay", js_import(js, (uintptr_t) Sys_delay, "vi"));
-  js_set(js, global, "print", js_import(js, (uintptr_t) Sys_print, "vj"));
-  js_set(js, global, "show", js_import(js, (uintptr_t) Neo_show, "v"));
-  js_set(js, global, "clear", js_import(js, (uintptr_t) Neo_clear, "v"));
-  js_set(js, global, "setPixelColor", js_import(js, (uintptr_t) Neo_setPixelColor, "viiii"));
+  js_set(js, serial, "println", js_import(js, (uintptr_t) Sys_println, "vj"));
+  js_set(js, pixel, "show", js_import(js, (uintptr_t) Neo_show, "v"));
+  js_set(js, pixel, "clear", js_import(js, (uintptr_t) Neo_clear, "v"));
+  js_set(js, pixel, "setPixelColor", js_import(js, (uintptr_t) Neo_setPixelColor, "viiii"));
+  js_set(js, pixel, "setPixelColor32", js_import(js, (uintptr_t) Neo_setPixelColor32, "vii"));
+  js_set(js, global, "Wheel32", js_import(js, (uintptr_t) Neo_Wheel32, "ii"));
   js_set(js, global, "WheelR", js_import(js, (uintptr_t) Neo_WheelR, "ii"));
   js_set(js, global, "WheelG", js_import(js, (uintptr_t) Neo_WheelG, "ii"));
   js_set(js, global, "WheelB", js_import(js, (uintptr_t) Neo_WheelB, "ii"));
 //js_set(js, global, "jsinfo", js_import(js, (uintptr_t) js_info, "sm"));
   js_set(js, global, "load", js_import(js, (uintptr_t) js_load, "vs"));
-  js_set(js, global, "numPixels", js_import(js, (uintptr_t) Neo_numPixels, "i")); 
+  js_set(js, pixel, "numPixels", js_import(js, (uintptr_t) Neo_numPixels, "i")); 
 
   if(spiffs_init) {
     if(elkLoad(String("/init.js"))) {
       if(DEBUG) { Serial.println(F("/init.js loaded")); }
-      jsval_t v = js_eval(js, "typeof(loop);", 0);
+      jsval_t v = js_eval(js, "typeof(setup);", ~0);
+      if (String(js_str(js, v)).substring(0) == "\"function\"") {
+        if(DEBUG) { Serial.println(F("setup() function found")); }
+        v = js_eval(js, "setup();", ~0);
+        if(DEBUG) { Serial.print(F("setup() function: ")); Serial.println(js_str(js, v)); }
+      } else {
+        if(DEBUG) { Serial.println(F("setup() function not found")); }
+      }      
+      v = js_eval(js, "typeof(loop);", ~0);
       if (String(js_str(js, v)).substring(0) == "\"function\"") {
         if(DEBUG) { Serial.println(F("loop() function found")); }
         js_init = true;
@@ -197,12 +240,12 @@ void elkInit() {
       if(DEBUG) { Serial.println(F("/init.js failed")); }
       js_init = false;
     }
-    Serial.printf("\n\r\n\rConnected to NeoJS SerialREPL (Elk %s)\n\r", ELK_VER);
+    Serial.printf("\n\r\n\rConnected to NeoJS SerialREPL (Elk %s)\n\r", JS_VERSION);
   }
 }
 
 String elkReload() {
-  ws.printfAll("Connected to NeoJS WebREPL (Elk %s)", ELK_VER);
+  ws.printfAll("Connected to NeoJS WebREPL (Elk %s)", JS_VERSION);
   elkInit();
   return String("Reloading Elk VM ...");
 }
@@ -216,7 +259,7 @@ void setup(){
   if(!SPIFFS.begin()) {
     Serial.println(F("SPIFFS Initialization ... failed"));
   } else { 
-    if(DEBUG) { Serial.println(F("SPIFFS Initialize....ok")); }
+    if(DEBUG) { Serial.println(F("\nSPIFFS Initialize....ok")); }
     spiffs_init = true;
   }
 
@@ -232,17 +275,18 @@ void setup(){
   
   elkInit();  
 
+  WiFi.hostname(config.hostName);
   WiFi.mode(WIFI_AP_STA);
-  if(config.wifi_ap_pass != "" && config.wifi_ap_ssid != "") // make sure ssid is set too?
+  if((String(config.wifi_ap_pass) != "") && (String(config.wifi_ap_ssid) != "")) // make sure ssid is set too?
     WiFi.softAP(config.wifi_ap_ssid, config.wifi_ap_pass);
   else
-    if(config.wifi_ap_ssid != "")
+    if(String(config.wifi_ap_ssid) != "")
       WiFi.softAP(config.wifi_ap_ssid);
     else
       WiFi.softAP(config.hostName); // always start an AP ...
     
-  if(config.wifi_sta_ssid != "") {
-    if(config.wifi_sta_pass != "")
+  if(String(config.wifi_sta_ssid != "")) {
+    if(String(config.wifi_sta_pass != ""))
       WiFi.begin(config.wifi_sta_ssid, config.wifi_sta_pass);
     else
       WiFi.begin(config.wifi_sta_ssid);
@@ -260,7 +304,7 @@ void setup(){
   server.addHandler(&ws);
   events.onConnect([](AsyncEventSourceClient *client){client->send("hello!",NULL,millis(),1000);});
   server.addHandler(&events);
-  if(config.http_username != "") {
+  if(String(config.http_username) != "") {
   #ifdef ESP32
     server.addHandler(new SPIFFSEditor(SPIFFS, config.http_username,config.http_password));
   #elif defined(ESP8266)
@@ -275,9 +319,16 @@ void setup(){
   }
   server.on("/scan", HTTP_GET, [](AsyncWebServerRequest *request){
     String json = "[";
+   
     int n = WiFi.scanComplete();
     if(n == -2){
+
+    #ifdef ESP32
+      WiFi.scanNetworks(true, true);
+    #elif defined(ESP8266) 
       WiFi.scanNetworks(true);
+    #endif
+
     } else if(n){
       for (int i = 0; i < n; ++i){
         if(i) json += ",";
@@ -287,7 +338,9 @@ void setup(){
         json += ",\"bssid\":\""+WiFi.BSSIDstr(i)+"\"";
         json += ",\"channel\":"+String(WiFi.channel(i));
         json += ",\"secure\":"+String(WiFi.encryptionType(i));
+    #ifdef ESP8266
         json += ",\"hidden\":"+String(WiFi.isHidden(i)?"true":"false");
+    #endif
         json += "}";
       }
       WiFi.scanDelete();
@@ -317,14 +370,15 @@ void setup(){
   server.onFileUpload([](AsyncWebServerRequest *request, const String& filename, size_t index, uint8_t *data, size_t len, bool final){});
   server.onRequestBody([](AsyncWebServerRequest *request, uint8_t *data, size_t len, size_t index, size_t total){});
   server.begin();
-  TelnetStream.begin();
   //FIXME: figure out how to pre-scan wifi??
 }
 
-void loop(){
-  NeoJSLoop();
+void loop() {
+  serialRepl();
   ArduinoOTA.handle();
   ws.cleanupClients();
+  if(js_init)
+    js_eval(js, "loop();", ~0);
 }
 
 String processCommand(String cmdString) {
@@ -344,7 +398,7 @@ String processCommand(String cmdString) {
       ++command;
     }
   }
-  v = js_eval(js, cmdString.c_str(), 0);
+  v = js_eval(js, cmdString.c_str(), cmdString.length());
   Responce = js_str(js, v);
   //js_gc(js, v);
   return Responce;
@@ -547,7 +601,7 @@ bool saveConfiguration(Config &config) {
 void onWsEvent(AsyncWebSocket * server, AsyncWebSocketClient * client, AwsEventType type, void * arg, uint8_t *data, size_t len) {
   String Responce;
   if(type == WS_EVT_CONNECT){
-    client->printf("Connected to NeoJS REPL (Elk %s)", ELK_VER);
+    client->printf("Connected to NeoJS REPL (Elk %s)", JS_VERSION);
     client->ping();
   } else if(type == WS_EVT_DATA){
     AwsFrameInfo * info = (AwsFrameInfo*)arg;
@@ -585,7 +639,7 @@ void onWsEvent(AsyncWebSocket * server, AsyncWebSocketClient * client, AwsEventT
   }
 }
 
-void NeoJSLoop(){
+void serialRepl() {
   char c = 0;
   String Responce;
   
@@ -610,40 +664,4 @@ void NeoJSLoop(){
       serial_Repl += c;
     }
   }
-  
-  if(!TelnetStream.disconnected()) {
-    if(!telnet_init) { // new connection
-      if(DEBUG) { Serial.println("Telnet Connected"); }
-      TelnetStream.printf("\n\r\n\rConnected to NeoJS REPL (Elk %s)\n\r", ELK_VER);
-      telnet_init = true;
-    }
-    if(TelnetStream.available() > 0) { // FIXME: change telnet to a multi client async solution ...
-      c = TelnetStream.read();
-      if((c == '\n') || (c == '\r')) {
-        if(TelnetStream.peek() == '\r' || TelnetStream.peek() == '\n') { //f*%k microsoft
-          c = TelnetStream.read();
-        }
-        Responce = processCommand(telnet_Repl);
-        //TelnetStream.println(telnet_Repl); // echo
-        TelnetStream.println(Responce);
-        telnet_Repl = "";
-        Responce = "";
-      } else if((c == 0x7F) || (c == '\b')) { // backspace
-          if(telnet_Repl.length() > 0) {  
-            telnet_Repl.remove(telnet_Repl.length()-1);
-            TelnetStream.write(" \b", 2);
-          }
-      } else { //FIXME: Do we expand command line editing to include arrow keys & history?
-        telnet_Repl += c;
-      }
-    }
-  } else {
-    if(telnet_init) {
-      if(DEBUG) { Serial.println("Telnet Disconnected"); }
-      telnet_Repl = "";
-      Responce = "";
-      telnet_init = false;
-    }
-  }    
-  if(js_init) js_eval(js, "loop();", 0);
 }

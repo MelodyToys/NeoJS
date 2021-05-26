@@ -1,5 +1,5 @@
-
-let loop = function(){ delay(1); };
+let setup = function(){ Serial.println("Hello World"); };
+let loop = function(){ return; };
 /*
                                                                        ((                                                                                     
                                                                     ((((((((                                                                                   

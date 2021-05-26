@@ -1,11 +1,9 @@
 {
   "wifi_sta_ssid": "",
   "wifi_sta_pass": "",
-  "wifi_ap_ssid": "",
+  "wifi_ap_ssid": "NEOJS",
   "wifi_ap_pass": "",
-  "hostName": "NeoJS",
-  "http_username": "",
-  "http_password": "",
-  "led_pin": 4,
-  "led_count": 8
+  "hostName": "NEOJS",
+  "http_username": "admin",
+  "http_password": "admin"
 }
