@@ -145,7 +145,6 @@ bool elkLoad(String path) {
        if(DEBUG) { Serial.println(F("file closed")); }
        v = js_eval(js, buffer.c_str(), buffer.length());
        if(DEBUG) { Serial.print(F("js_eval() result: ")); Serial.println(js_str(js, v)); }
-       //js_gc(js, v);
        buffer = "";
        return true;
       }
@@ -212,7 +211,6 @@ void elkInit() {
   js_set(js, global, "WheelR", js_import(js, (uintptr_t) Neo_WheelR, "ii"));
   js_set(js, global, "WheelG", js_import(js, (uintptr_t) Neo_WheelG, "ii"));
   js_set(js, global, "WheelB", js_import(js, (uintptr_t) Neo_WheelB, "ii"));
-//js_set(js, global, "jsinfo", js_import(js, (uintptr_t) js_info, "sm"));
   js_set(js, global, "load", js_import(js, (uintptr_t) js_load, "vs"));
   js_set(js, pixel, "numPixels", js_import(js, (uintptr_t) Neo_numPixels, "i")); 
 
@@ -235,7 +233,6 @@ void elkInit() {
         if(DEBUG) { Serial.println(F("loop() function not found")); }
         js_init = false;
       }
-      //js_gc(js, v);
     } else {
       if(DEBUG) { Serial.println(F("/init.js failed")); }
       js_init = false;
@@ -255,9 +252,9 @@ void setup(){
     
   Serial.begin(115200);
   Serial.setDebugOutput(false); // do not use wifi debug to console
-  
+  Serial.println("");
   if(!SPIFFS.begin()) {
-    Serial.println(F("SPIFFS Initialization ... failed"));
+    if(DEBUG) { Serial.println(F("SPIFFS Initialization ... failed")); }
   } else { 
     if(DEBUG) { Serial.println(F("\nSPIFFS Initialize....ok")); }
     spiffs_init = true;
@@ -400,7 +397,6 @@ String processCommand(String cmdString) {
   }
   v = js_eval(js, cmdString.c_str(), cmdString.length());
   Responce = js_str(js, v);
-  //js_gc(js, v);
   return Responce;
 }
 
@@ -500,9 +496,9 @@ String infoCmd(const char *arg) {
   }
   Responce += "Spiffs Size: " + String(fs_info.totalBytes/1024) +"KB Block: " + String(fs_info.blockSize/1024) + "KB Page: " + String(fs_info.pageSize) + "B\n\r";
   Responce += "SDK: " + String(ESP.getSdkVersion()) + " Core: " + String(ESP.getCoreVersion()) + " Arduino: " + String(ARDUINO) + "\n\r";
-  Responce += "NeoJS: " + String(NEOJS_VER) + " Size: " + String(ESP.getSketchSize()/1024) + "KB\n\r";
+  Responce += "NeoJS: " + String(NEOJS_VER) + " Size: " + String(ESP.getSketchSize()/1024) + "KB Elk: " + String(JS_VERSION) + " Heap: " + String(config.elk_alloc) + "KB\n\r";
   Responce += "MD5: " + ESP.getSketchMD5() + "\n\r";
-  Responce += "Free Sketch: " + String(ESP.getFreeSketchSpace()/1024) + "KB Heap: " + String(ESP.getFreeHeap()/1024) + "KB Spiffs: " + String((fs_info.totalBytes - fs_info.usedBytes)/1024) + "KB\n\r";
+  Responce += "(Free) VM: " + String(100 - js_usage(js)) + "% Sketch: " + String(ESP.getFreeSketchSpace()/1024) + "KB Heap: " + String(ESP.getFreeHeap()/1024) + "KB Spiffs: " + String((fs_info.totalBytes - fs_info.usedBytes)/1024) + "KB\n\r";
   return Responce;
 }
 
@@ -634,7 +630,7 @@ void onWsEvent(AsyncWebSocket * server, AsyncWebSocketClient * client, AwsEventT
       Responce = processCommand(msg);
     }
     Responce.replace("\n\r", "\n"); // strip double returns ... html supports both ...
-    client->printf("%s", msg.c_str()); // echo
+    //client->printf("%s", msg.c_str()); // echo
     client->printf("%s", Responce.c_str());
   }
 }
@@ -650,7 +646,6 @@ void serialRepl() {
         c = Serial.read();
       }
       Responce = processCommand(serial_Repl);
-      //Serial.println(serial_Repl); // echo
       Serial.println(Responce);
       serial_Repl = "";
       Responce = "";
@@ -660,7 +655,7 @@ void serialRepl() {
           Serial.write(" \b", 2);
         }
     } else {
-      Serial.write(c);
+      //Serial.write(c);
       serial_Repl += c;
     }
   }
