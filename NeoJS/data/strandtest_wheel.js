@@ -1,3 +1,6 @@
+/* jshint undef: true, unused: false, bitwise: false */
+/* globals Pixel, millis, delay, Serial, WheelR, WheelG, WheelB */
+
 // NeoJS Demo ~ sfranzyshen
 // This is a port of strandtest_wheel.ino to JavaScript (Elk)
 
