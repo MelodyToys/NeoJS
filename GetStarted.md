@@ -22,7 +22,7 @@ To get step-by-step instructions select one of the following link accordingly to
 
 [Windows](https://www.arduino.cc/en/Guide/Windows)
 
-[Mac OS X](https://www.arduino.cc/en/Guide/MacOSX)
+[Mac OS X](https://www.arduino.cc/en/Guide/macOS)
 
 [Linux](https://www.arduino.cc/en/Guide/Linux)
 
