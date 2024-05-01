@@ -5,9 +5,11 @@
 #define LED_PIN   D2
 #define LED_COUNT 8
 
+// Initialize the NeoPixel strip with the given pin and number of LEDs
 Adafruit_NeoPixel Pixel = Adafruit_NeoPixel(LED_COUNT, LED_PIN, NEO_GRB + NEO_KHZ800);
 
-// colorWipe()
+// The colorWipe() function sets each pixel on the strip to a specified color,
+// one at a time, creating a "wipe" effect.
 void colorWipe(uint32_t color, int wait) {
   int i = 0;
   
@@ -19,7 +21,9 @@ void colorWipe(uint32_t color, int wait) {
   }
 }
 
-// theaterChase()
+// The theaterChase() function creates a "chase" effect by lighting up every
+// third pixel on the strip with a specified color, then shifting the lit
+// pixels down the strip.
 void theaterChase(uint32_t color, int wait) {
   int a = 0, b, c;
   
@@ -40,7 +44,7 @@ void theaterChase(uint32_t color, int wait) {
   }
 }
 
-// rainbow()
+// The rainbow() function displays a rainbow pattern on the NeoPixel strip.
 void rainbow(int wait) {
   long firstPixelHue = 0;
   int i, pixelHue;
@@ -58,7 +62,8 @@ void rainbow(int wait) {
   }
 }
 
-// theaterChaseRainbow()
+// The theaterChaseRainbow() function displays a rainbow pattern that chases
+// down the NeoPixel strip.
 void theaterChaseRainbow(int wait) {
   int firstPixelHue = 0;
   int a = 0, b, c, hue;
@@ -84,7 +89,8 @@ void theaterChaseRainbow(int wait) {
   }
 }
 
-// setup()
+// The setup() function initializes the serial communication, initializes the
+// NeoPixel strip, and sets the brightness of the strip.
 void setup() {
   Serial.begin(115200);
   Pixel.begin();
@@ -93,7 +99,7 @@ void setup() {
   Serial.println("\nstrandtest ... start");
 }
 
-// loop()
+// The loop() function runs the different light patterns in a sequence.
 void loop() {
   colorWipe(Pixel.Color(255, 0, 0), 50); // Red
   colorWipe(Pixel.Color(0, 255, 0), 50); // Green
