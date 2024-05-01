@@ -1,3 +1,6 @@
-/*.js.gz
-/*.htm.gz
+# Compressed file extensions to ignore
+*.js.gz
+*.htm.gz
+
+# Specific files to exclude
 /.exclude.files
