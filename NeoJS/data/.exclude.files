@@ -1,6 +1,6 @@
-# Compressed file extensions to ignore
+# This is a list of file extensions to ignore when compressing files. Any files with these extensions will not be compressed.
 *.js.gz
 *.htm.gz
 
-# Specific files to exclude
+# This is a specific file that will be excluded from compression. Any files or directories with this name will not be compressed.
 /.exclude.files
