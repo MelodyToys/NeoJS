@@ -2,6 +2,15 @@
 /* globals Pixel, millis, delay, Serial, WheelR, WheelG, WheelB */
 
 // Utility functions
+
+/**
+ * Wipes the color across the entire strip, one pixel at a time.
+ *
+ * @param {number} r - The red color component (0-255).
+ * @param {number} g - The green color component (0-255).
+ * @param {number} b - The blue color component (0-255).
+ * @param {number} wait - The time to wait between each pixel update (in milliseconds).
+ */
 const colorWipe = (r, g, b, wait) => {
   for (let i = 0; i < Pixel.numPixels(); i++) {
     Pixel.setPixelColor(i, r, g, b);
@@ -10,6 +19,14 @@ const colorWipe = (r, g, b, wait) => {
   }
 };
 
+/**
+ * Performs a theater-style chase animation across the strip.
+ *
+ * @param {number} r - The red color component (0-255).
+ * @param {number} g - The green color component (0-255).
+ * @param {number} b - The blue color component (0-255).
+ * @param {number} wait - The time to wait between each pixel update (in milliseconds).
+ */
 const theaterChase = (r, g, b, wait) => {
   for (let j = 0; j < 10; j++) {
     for (let q = 0; q < 3; q++) {
@@ -23,6 +40,11 @@ const theaterChase = (r, g, b, wait) => {
   }
 };
 
+/**
+ * Displays a rainbow cycle animation across the strip.
+ *
+ * @param {number} wait - The time to wait between each pixel update (in milliseconds).
+ */
 const rainbow = (wait) => {
   for (let j = 0; j < 256; j++) {
     for (let i = 0; i < Pixel.numPixels(); i++) {
@@ -34,6 +56,11 @@ const rainbow = (wait) => {
   }
 };
 
+/**
+ * Displays a rainbow cycle animation across the strip, with continuous color changes.
+ *
+ * @param {number} wait - The time to wait between each pixel update (in milliseconds).
+ */
 const rainbowCycle = (wait) => {
   for (let j = 0; j < 256 * 5; j++) {
     for (let i = 0; i < Pixel.numPixels(); i++) {
@@ -45,6 +72,11 @@ const rainbowCycle = (wait) => {
   }
 };
 
+/**
+ * Performs a theater-style chase animation across the strip, with rainbow color changes.
+ *
+ * @param {number} wait - The time to wait between each pixel update (in milliseconds).
+ */
 const theaterChaseRainbow = (wait) => {
   for (let j = 0; j < 256; j++) {
     for (let q = 0; q < 3; q++) {
@@ -60,10 +92,17 @@ const theaterChaseRainbow = (wait) => {
 };
 
 // Main functions
+
+/**
+ * Initializes the required settings and resources.
+ */
 const setup = () => {
   Serial.println("strandtest_wheel ... start");
 };
 
+/**
+ * The main loop function that contains the sequence of animations.
+ */
 const loop = () => {
   colorWipe(255, 0, 0, 50); // Red
   colorWipe(0, 255, 0, 50); // Green
@@ -79,3 +118,4 @@ const loop = () => {
 
   Serial.println("strandtest_wheel ... loop");
 };
+
