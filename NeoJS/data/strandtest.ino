@@ -3,18 +3,19 @@
 
 #include <Adafruit_NeoPixel.h>
 
+// Define the LED pin and count
 #define LED_PIN     D2
 #define LED_COUNT   8
 
-// Create NeoPixel object with given LED count and pin
+// Create a NeoPixel object with the given LED count and pin
 Adafruit_NeoPixel ledStrip = Adafruit_NeoPixel(LED_COUNT, LED_PIN, NEO_GRB + NEO_KHZ800);
 
 // Function to initialize the LED strip
 void setupLedStrip() {
   if (!ledStrip.begin()) {
     Serial.println("Error: LED strip initialization failed!");
+    // Infinite loop in case of initialization failure
     while (1) {
-      // Infinite loop in case of initialization failure
     }
   }
   ledStrip.setBrightness(50);
@@ -81,22 +82,31 @@ void theaterChaseRainbow(int wait) {
   }
 }
 
+// Main setup function
 void setup() {
   Serial.begin(115200);
   setupLedStrip();
   Serial.println("strandtest ... start");
 }
 
+// Main loop function
 void loop() {
+  // Wipe the strip with different colors
   colorWipe(ledStrip.Color(255, 0, 0), 50); // Red
   colorWipe(ledStrip.Color(0, 255, 0), 50); // Green
   colorWipe(ledStrip.Color(0, 0, 255), 50); // Blue
 
+  // Perform theater-style chasing lights with different colors
   theaterChase(ledStrip.Color(127, 127, 127), 50); // White
   theaterChase(ledStrip.Color(127, 0, 0), 50); // Red
   theaterChase(ledStrip.Color(0, 0, 127), 50); // Blue
 
+  // Cycle through all rainbow colors
   rainbow(10);
+
+  // Perform theater-style chasing rainbow colors
   theaterChaseRainbow(50);
+
+  // Print a message to the serial monitor
   Serial.println("strandtest ... loop");
 }
