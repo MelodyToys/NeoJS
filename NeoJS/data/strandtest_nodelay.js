@@ -14,121 +14,116 @@ let patternPrevious = 0,       // Previous Pattern Millis
     pixelCurrent = 0,          // Current Pixel Number
     pixelNumber = Pixel.numPixels(); // Number of Pixels
 
+if (pixelNumber <= 0) {
+  console.error("Error: Invalid number of pixels");
+  return;
+}
+
 // colorWipe()
-let colorWipe = function(r, g, b, wait) {
-    if(pixelInterval !== wait)
-		pixelInterval = wait;
-    Pixel.setPixelColor(pixelCurrent, r, g, b);
-    Pixel.show();
-    pixelCurrent++;
-    if(pixelCurrent >= pixelNumber) {
-        pixelCurrent = 0;
-        Pixel.clear();
-    }
+const colorWipe = (r, g, b, wait) => {
+  if (pixelInterval !== wait) pixelInterval = wait;
+  Pixel.setPixelColor(pixelCurrent, r, g, b);
+  Pixel.show();
+  pixelCurrent = (pixelCurrent + 1) % pixelNumber;
 };
 
 // theaterChase()
-let theaterChase = function(r, g, b, wait) {
-    let i = 0;
-	
-    if(pixelInterval !== wait)
-		pixelInterval = wait;
-    while(i < pixelNumber) {
-        Pixel.setPixelColor(i + pixelQueue, r, g, b);
-        i = i + 3;
-    }
-    Pixel.show();
-    i = 0;
-    while(i < pixelNumber) {
-        Pixel.setPixelColor(i + pixelQueue, 0, 0, 0);
-        i = i + 3;
-    }
-    pixelQueue++;
-    if(pixelQueue >= 3) pixelQueue = 0;
+const theaterChase = (r, g, b, wait) => {
+  if (pixelInterval !== wait) pixelInterval = wait;
+  for (let i = 0; i < pixelNumber; i = i + 3) {
+    Pixel.setPixelColor(i + pixelQueue, r, g, b);
+  }
+  Pixel.show();
+  for (let i = 0; i < pixelNumber; i = i + 3) {
+    Pixel.setPixelColor(i + pixelQueue, 0, 0, 0);
+  }
+  pixelQueue = (pixelQueue + 1) % 3;
 };
 
 // rainbow()
-let rainbow = function(wait) {
-    let i = 0, p;
-	
-    if(pixelInterval !== wait)
-		pixelInterval = wait;
-    while(i < pixelNumber) {
-        p = (i + pixelCycle) & 255;
-        Pixel.setPixelColor(i, WheelR(p), WheelG(p), WheelB(p));
-        i++;
-    }
-    Pixel.show();
-    pixelCycle++;
-    if(pixelCycle >= 256) pixelCycle = 0;
+const rainbow = (wait) => {
+  if (pixelInterval !== wait) pixelInterval = wait;
+  for (let i = 0; i < pixelNumber; i++) {
+    let p = (i + pixelCycle) & 255;
+    Pixel.setPixelColor(i, WheelR(p), WheelG(p), WheelB(p));
+  }
+  Pixel.show();
+  pixelCycle = (pixelCycle + 1) % 256;
 };
 
 // rainbowCycle()
-let rainbowCycle = function(wait) {
-    let i = 0, p;
-	
-    if(pixelInterval !== wait)
-		pixelInterval = wait;
-    while(i < pixelNumber) {
-        p = ((i * 256 / pixelNumber) + pixelCycle) & 255;
-        Pixel.setPixelColor(i, WheelR(p), WheelG(p), WheelB(p));
-        i++;
-    }
-    Pixel.show();
-    pixelCycle++;
-    if(pixelCycle >= 256 * 5) pixelCycle = 0;
+const rainbowCycle = (wait) => {
+  if (pixelInterval !== wait) pixelInterval = wait;
+  for (let i = 0; i < pixelNumber; i++) {
+    let p = ((i * 256) / pixelNumber + pixelCycle) & 255;
+    Pixel.setPixelColor(i, WheelR(p), WheelG(p), WheelB(p));
+  }
+  Pixel.show();
+  pixelCycle = (pixelCycle + 1) % (256 * 5);
 };
 
 // theaterChaseRainbow()
-let theaterChaseRainbow = function(wait) {
-	let i = 0, p;
-	
-    if(pixelInterval !== wait)
-		pixelInterval = wait;
-    while(i < pixelNumber) {
-        p = (i + pixelCycle) % 255;
-        Pixel.setPixelColor(i + pixelQueue, WheelR(p), WheelG(p), WheelB(p));
-        i = i + 3;
-    }
-    Pixel.show();
-    i = 0;
-    while(i < pixelNumber) {
-        Pixel.setPixelColor(i + pixelQueue, 0, 0, 0);
-        i = i + 3;
-    }
-    pixelQueue++;
-    pixelCycle++;
-    if(pixelQueue >= 3) pixelQueue = 0;
-    if(pixelCycle >= 256) pixelCycle = 0;
+const theaterChaseRainbow = (wait) => {
+  if (pixelInterval !== wait) pixelInterval = wait;
+  for (let i = 0; i < pixelNumber; i = i + 3) {
+    let p = (i + pixelCycle) % 255;
+    Pixel.setPixelColor(i + pixelQueue, WheelR(p), WheelG(p), WheelB(p));
+  }
+  Pixel.show();
+  for (let i = 0; i < pixelNumber; i = i + 3) {
+    Pixel.setPixelColor(i + pixelQueue, 0, 0, 0);
+  }
+  pixelQueue = (pixelQueue + 1) % 3;
+  pixelCycle = (pixelCycle + 1) % 256;
 };
 
 // setup()
-let setup = function() {
+const setup = () => {
   Serial.println("strandtest_nodelay ... start");
 };
 
 // loop()
-let loop = function() {
-    let currentMillis = millis();
-	
-    if(currentMillis - patternPrevious >= patternInterval) {
-        patternPrevious = currentMillis;
-        patternCurrent++;
-        if(patternCurrent >= 9) {
-			patternCurrent = 0;
-			Serial.println("strandtest_nodelay ... loop");
-		}
+const loop = () => {
+  let currentMillis = millis();
+
+  if (currentMillis - patternPrevious >= patternInterval) {
+    patternPrevious = currentMillis;
+    patternCurrent++;
+    if (patternCurrent >= 9) {
+      patternCurrent = 0;
+      Serial.println("strandtest_nodelay ... loop");
     }
-    if(currentMillis - pixelPrevious >= pixelInterval) {
-        pixelPrevious = currentMillis;
-        if(patternCurrent === 8) theaterChaseRainbow(50);
-        else if(patternCurrent === 7) rainbowCycle(20);
-        else if(patternCurrent === 6) rainbow(20);
-        else if(patternCurrent === 5) theaterChase(0, 0, 127, 50);    // Blue
-        else if(patternCurrent === 4) theaterChase(127, 0, 0, 50);    // Red
-        else if(patternCurrent === 3) theaterChase(127, 127, 127, 50);// White
-        else if(patternCurrent === 2) colorWipe(0, 0, 255, 50);       // Blue
-        else if(patternCurrent === 1) colorWipe(0, 255, 0, 50);       // Green
-        else if(patternCurrent === 0) colorWipe(255, 0, 0, 50);       // Red
+  }
+  if (currentMillis - pixelPrevious >= pixelInterval) {
+    pixelPrevious = currentMillis;
+    switch (patternCurrent) {
+      case 8:
+        theaterChaseRainbow(50);
+        break;
+      case 7:
+        rainbowCycle(20);
+        break;
+      case 6:
+        rainbow(20);
+        break;
+      case 5:
+        theaterChase(0, 0, 127, 50); // Blue
+        break;
+      case 4:
+        theaterChase(127, 0, 0, 50); // Red
+        break;
+      case 3:
+        theaterChase(127, 127, 127, 50); // White
+        break;
+      case 2:
+        colorWipe(0, 0, 255, 50); // Blue
+        break;
+      case 1:
+        colorWipe(0, 255, 0, 50); // Green
+        break;
+      case 0:
+        colorWipe(255, 0, 0, 50); // Red
+        break;
     }
+  }
 };
