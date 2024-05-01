@@ -1,4 +1,18 @@
-theme: jekyll-theme-minimal
-logo: /logo.png
+# Configuration for Jekyll theme minimal-mistakes
+theme: minimal-mistakes
+
+# Configuration for the site logo
+logo:
+  url: /logo.png
+  width: 150 # optional, defaults to 150
+  height: 40 # optional, defaults to 40
+
+# Configuration for showing download links
 show_downloads: true
-favicon: /NeoJS/favicon.ico
+
+# Configuration for the site favicon
+favicon:
+  url: /NeoJS/favicon.ico
+  size: 16 # optional, defaults to 16
+  type: png # optional, defaults to png
+
