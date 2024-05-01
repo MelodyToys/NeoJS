@@ -1,5 +1,5 @@
 // NeoJS Demo ~ sfranzyshen
-// strandtest_nodelay.ino in Arduino C++
+// strandtest_nodelay_improved.ino in Arduino C++
 
 #include <Adafruit_NeoPixel.h>
 #define LED_PIN   D2
@@ -7,153 +7,160 @@
 
 Adafruit_NeoPixel Pixel = Adafruit_NeoPixel(LED_COUNT, LED_PIN, NEO_GRB + NEO_KHZ800);
 
-unsigned long patternPrevious = 0;             // Previous Pattern Millis
-int           patternCurrent = 0;              // Current Pattern Number
-int           patternInterval = 5500;          // Pattern Interval (ms)
-unsigned long pixelPrevious = 0;               // Previous Pixel Millis
-uint8_t       pixelInterval = 50;              // Pixel Interval (ms)
-int           pixelQueue = 0;                  // Pixel Queue
-int           pixelCycle = 0;                  // Pixel Cycle
-uint16_t      pixelCurrent = 0;                // Current Pixel Number
-uint16_t      pixelNumber = Pixel.numPixels(); // Number of Pixels
+const unsigned long patternInterval = 5500;          // Pattern Interval (ms)
+const uint8_t pixelInterval = 50;              // Pixel Interval (ms)
 
 // colorWipe()
 void colorWipe(uint8_t r, uint8_t g, uint8_t b, uint8_t wait) {
-  if(pixelInterval != wait) pixelInterval = wait;
-  Pixel.setPixelColor(pixelCurrent, r, g, b);
-  Pixel.show();
-  pixelCurrent++;
-  if(pixelCurrent >= pixelNumber) {
-    pixelCurrent = 0;
-    Pixel.clear();
+  Pixel.setBrightness(50);
+  for (int i = 0; i < Pixel.numPixels(); i++) {
+    Pixel.setPixelColor(i, r, g, b);
+    Pixel.show();
+    delay(wait);
   }
+  Pixel.clear();
 }
 
 // rainbow()
 void rainbow(uint8_t wait) {
-  if(pixelInterval != wait) pixelInterval = wait;
-  uint16_t i = 0;
-  int p = 0;
-  while(i < pixelNumber) {
-    p = (i + pixelCycle) & 255;
-    Pixel.setPixelColor(i, WheelR(p), WheelG(p), WheelB(p));
-    i++;
+  uint16_t i, j;
+  for (j = 0; j < 256; j++) {
+    for (i = 0; i < Pixel.numPixels(); i++) {
+      Pixel.setPixelColor(i, WheelR(i + j), WheelG(i + j), WheelB(i + j));
+    }
+    Pixel.show();
+    delay(wait);
   }
-  Pixel.show();
-  pixelCycle++;
-  if(pixelCycle >= 256) pixelCycle = 0;
 }
 
 // rainbowCycle()
 void rainbowCycle(uint8_t wait) {
-  if(pixelInterval != wait) pixelInterval = wait;
-  uint16_t i = 0;
-  int p = 0;
-  while( i < pixelNumber) {
-    p = ((i * 256 / pixelNumber) + pixelCycle) & 255;
-    Pixel.setPixelColor(i, WheelR(p), WheelG(p), WheelB(p));
-    i++;
+  int j;
+  for (j = 0; j < 256 * 5; j++) {
+    for (int i = 0; i < Pixel.numPixels(); i++) {
+      Pixel.setPixelColor(i, WheelR(((i * 256 / Pixel.numPixels()) + j) & 255), WheelG(((i * 256 / Pixel.numPixels()) + j) & 255), WheelB(((i * 256 / Pixel.numPixels()) + j) & 255));
+    }
+    Pixel.show();
+    delay(wait);
   }
-  Pixel.show();
-  pixelCycle++;
-  if(pixelCycle >= 256 * 5) pixelCycle = 0;
 }
 
 // theaterChase()
 void theaterChase(uint8_t r, uint8_t g, uint8_t b, uint8_t wait) {
-  if(pixelInterval != wait) pixelInterval = wait;
-  int i = 0;
-  while(i < pixelNumber) {
-    Pixel.setPixelColor(i + pixelQueue, r, g, b);
-    i = i + 3;
+  int i;
+  for (i = 0; i < 10; i++) {
+    for (int j = 0; j < Pixel.numPixels(); j = j + 3) {
+      Pixel.setPixelColor(j + i % 3, r, g, b);
+    }
+    Pixel.show();
+    delay(wait);
+    for (int j = 0; j < Pixel.numPixels(); j = j + 3) {
+      Pixel.setPixelColor(j + i % 3, 0, 0, 0);
+    }
   }
-  Pixel.show();
-  i = 0;
-  while(i < pixelNumber) {
-    Pixel.setPixelColor(i + pixelQueue, 0, 0, 0);
-    i = i + 3;
-  }
-  pixelQueue++;
-  if(pixelQueue >= 3) pixelQueue = 0;
 }
 
 // theaterChaseRainbow()
 void theaterChaseRainbow(uint8_t wait) {
-  if(pixelInterval != wait) pixelInterval = wait;
-  int i = 0;
-  int p = 0;
-  while(i < pixelNumber) {
-    p = (i + pixelCycle) % 255;
-    Pixel.setPixelColor(i + pixelQueue, WheelR(p), WheelG(p), WheelB(p));
-    i = i + 3;
+  int i, j;
+  for (j = 0; j < 256; j++) {
+    for (i = 0; i < 10; i++) {
+      for (int k = 0; k < Pixel.numPixels(); k = k + 3) {
+        Pixel.setPixelColor(k + i % 3, WheelR((i + j) % 255), WheelG((i + j) % 255), WheelB((i + j) % 255));
+      }
+      Pixel.show();
+      delay(wait);
+      for (int k = 0; k < Pixel.numPixels(); k = k + 3) {
+        Pixel.setPixelColor(k + i % 3, 0, 0, 0);
+      }
+    }
   }
-  Pixel.show();
-  i = 0;
-  while( i < pixelNumber) {
-    Pixel.setPixelColor(i + pixelQueue, 0, 0, 0);
-    i = i + 3;
-  }      
-  pixelQueue++;
-  pixelCycle++;
-  if(pixelQueue >= 3) pixelQueue = 0;
-  if(pixelCycle >= 256) pixelCycle = 0;
 }
 
 // WheelR()
-int WheelR(int Pos) {
-  Pos = 255 - Pos;
-  if(Pos < 85) { return 255 - Pos * 3; }
-  if(Pos < 170) { return 0; }
-  Pos -= 170;
-  return Pos * 3;
+uint8_t WheelR(byte WheelPos) {
+  WheelPos = 255 - WheelPos;
+  if (WheelPos < 85) {
+    return 255 - WheelPos * 3;
+  }
+  if (WheelPos < 170) {
+    WheelPos -= 85;
+    return WheelPos * 3;
+  }
+  return 0;
 }
 
 // WheelG()
-int WheelG(int Pos) {
-  Pos = 255 - Pos;
-  if(Pos < 85) { return 0; }
-  if(Pos < 170) { Pos -= 85; return Pos * 3; }
-  Pos -= 170;
-  return 255 - Pos * 3;
+uint8_t WheelG(byte WheelPos) {
+  WheelPos = 255 - WheelPos;
+  if (WheelPos < 85) {
+    return 0;
+  }
+  if (WheelPos < 170) {
+    WheelPos -= 85;
+    return WheelPos * 3;
+  }
+  return 255 - WheelPos * 3;
 }
 
 // WheelB()
-int WheelB(int Pos) {
-  Pos = 255 - Pos;
-  if(Pos < 85) { return Pos * 3; }
-  if(Pos < 170) { Pos -= 85; return 255 - Pos * 3; }
+uint8_t WheelB(byte WheelPos) {
+  WheelPos = 255 - WheelPos;
+  if (WheelPos < 85) {
+    return WheelPos * 3;
+  }
+  if (WheelPos < 170) {
+    WheelPos -= 85;
+    return 255 - WheelPos * 3;
+  }
   return 0;
 }
+
 // setup()
 void setup() {
-  Serial.begin(115200);
   Pixel.begin();
-  Pixel.setBrightness(50);
-  Pixel.show();
-  Serial.println("\nstrandtest_nodelay ... start");
+  Serial.begin(115200);
+  Serial.println("\nstrandtest_nodelay_improved ... start");
 }
 
 // loop()
 void loop() {
   unsigned long currentMillis = millis();
-  if((currentMillis - patternPrevious) >= patternInterval) {
-    patternPrevious = currentMillis ;
+  if (currentMillis - patternPrevious >= patternInterval) {
+    patternPrevious = currentMillis;
     patternCurrent++;
-    if(patternCurrent >= 8) {
+    if (patternCurrent >= 8) {
       patternCurrent = 0;
-      Serial.println("strandtest_nodelay ... loop");
+      Serial.println("strandtest_nodelay_improved ... loop");
     }
-  }  
-  if(currentMillis - pixelPrevious >= pixelInterval) {
-    pixelPrevious = currentMillis;
-    if(patternCurrent == 8) theaterChaseRainbow(50);
-    else if(patternCurrent == 7) rainbowCycle(20);
-    else if(patternCurrent == 6) rainbow(20);
-    else if(patternCurrent == 5) theaterChase(0, 0, 127, 50);     // Blue
-    else if(patternCurrent == 4) theaterChase(127, 0, 0, 50);     // Red
-    else if(patternCurrent == 3) theaterChase(127, 127, 127, 50); // White
-    else if(patternCurrent == 2) colorWipe(0, 0, 255, 50);        // Blue
-    else if(patternCurrent == 1) colorWipe(0, 255, 0, 50);        // Green
-    else if(patternCurrent == 0) colorWipe(255, 0, 0, 50);        // Red
-  }    
+  }
+  switch (patternCurrent) {
+    case 0:
+      colorWipe(255, 0, 0, pixelInterval);
+      break;
+    case 1:
+      colorWipe(0, 255, 0, pixelInterval);
+      break;
+    case 2:
+      colorWipe(0, 0, 255, pixelInterval);
+      break;
+    case 3:
+      theaterChase(127, 127, 127, pixelInterval);
+      break;
+    case 4:
+      theaterChase(127, 0, 0, pixelInterval);
+      break;
+    case 5:
+      theaterChase(0, 127, 0, pixelInterval);
+      break;
+    case 6:
+      rainbow(pixelInterval);
+      break;
+    case 7:
+      rainbowCycle(pixelInterval);
+      break;
+    case 8:
+      theaterChaseRainbow(pixelInterval);
+      break;
+  }
 }
