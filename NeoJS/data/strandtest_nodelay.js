@@ -4,22 +4,39 @@
 // NeoJS Demo ~ sfranzyshen
 // This is a port of strandtest_nodelay.ino to JavaScript (Elk)
 
-let patternPrevious = 0,       // Previous Pattern Millis
-    patternCurrent = 0,        // Current Pattern Number
-    patternInterval = 5500,    // Pattern Interval (ms)
-    pixelPrevious = 0,         // Previous Pixel Millis
-    pixelInterval = 45,        // Pixel Interval (ms)
-    pixelQueue = 0,            // Pixel Queue
-    pixelCycle = 0,            // Pixel Cycle
-    pixelCurrent = 0,          // Current Pixel Number
-    pixelNumber = Pixel.numPixels(); // Number of Pixels
+// Variables
+// ---------
 
-if (pixelNumber <= 0) {
-  console.error("Error: Invalid number of pixels");
-  return;
-}
+// patternPrevious: Millis (ms) of the previous pattern change
+let patternPrevious = 0;      
 
-// colorWipe()
+// patternCurrent: Current pattern number
+let patternCurrent = 0;       
+
+// patternInterval: Pattern interval (ms)
+let patternInterval = 5500;   
+
+// pixelPrevious: Millis (ms) of the previous pixel change
+let pixelPrevious = 0;        
+
+// pixelInterval: Pixel interval (ms)
+let pixelInterval = 45;       
+
+// pixelQueue: Pixel queue
+let pixelQueue = 0;           
+
+// pixelCycle: Pixel cycle
+let pixelCycle = 0;           
+
+// pixelCurrent: Current pixel number
+let pixelCurrent = 0;         
+
+// pixelNumber: Number of pixels
+let pixelNumber = Pixel.numPixels(); 
+
+// Function: colorWipe()
+// Parameters: r, g, b (red, green, blue values), wait (interval in ms)
+// Description: Wipes the color across the NeoPixel strip
 const colorWipe = (r, g, b, wait) => {
   if (pixelInterval !== wait) pixelInterval = wait;
   Pixel.setPixelColor(pixelCurrent, r, g, b);
@@ -27,7 +44,9 @@ const colorWipe = (r, g, b, wait) => {
   pixelCurrent = (pixelCurrent + 1) % pixelNumber;
 };
 
-// theaterChase()
+// Function: theaterChase()
+// Parameters: r, g, b (red, green, blue values), wait (interval in ms)
+// Description: Chases the specified color along the NeoPixel strip
 const theaterChase = (r, g, b, wait) => {
   if (pixelInterval !== wait) pixelInterval = wait;
   for (let i = 0; i < pixelNumber; i = i + 3) {
@@ -40,7 +59,9 @@ const theaterChase = (r, g, b, wait) => {
   pixelQueue = (pixelQueue + 1) % 3;
 };
 
-// rainbow()
+// Function: rainbow()
+// Parameters: wait (interval in ms)
+// Description: Displays a rainbow pattern on the NeoPixel strip
 const rainbow = (wait) => {
   if (pixelInterval !== wait) pixelInterval = wait;
   for (let i = 0; i < pixelNumber; i++) {
@@ -51,7 +72,9 @@ const rainbow = (wait) => {
   pixelCycle = (pixelCycle + 1) % 256;
 };
 
-// rainbowCycle()
+// Function: rainbowCycle()
+// Parameters: wait (interval in ms)
+// Description: Displays a rainbow cycle pattern on the NeoPixel strip
 const rainbowCycle = (wait) => {
   if (pixelInterval !== wait) pixelInterval = wait;
   for (let i = 0; i < pixelNumber; i++) {
@@ -62,7 +85,9 @@ const rainbowCycle = (wait) => {
   pixelCycle = (pixelCycle + 1) % (256 * 5);
 };
 
-// theaterChaseRainbow()
+// Function: theaterChaseRainbow()
+// Parameters: wait (interval in ms)
+// Description: Chases a rainbow pattern along the NeoPixel strip
 const theaterChaseRainbow = (wait) => {
   if (pixelInterval !== wait) pixelInterval = wait;
   for (let i = 0; i < pixelNumber; i = i + 3) {
@@ -77,12 +102,14 @@ const theaterChaseRainbow = (wait) => {
   pixelCycle = (pixelCycle + 1) % 256;
 };
 
-// setup()
+// Function: setup()
+// Description: Initializes the NeoPixel library and sets up the serial communication
 const setup = () => {
   Serial.println("strandtest_nodelay ... start");
 };
 
-// loop()
+// Function: loop()
+// Description: Main loop that runs the different patterns based on the patternCurrent variable
 const loop = () => {
   let currentMillis = millis();
 
